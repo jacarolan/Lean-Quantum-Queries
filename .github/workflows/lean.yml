@@ -2,7 +2,7 @@ name: Lean CI
 
 on:
   push:
-    branches: ["main", "formalization"]
+    branches: ["main", "formalization", "machine-checkable"]
   pull_request:
     branches: ["main"]
   workflow_dispatch:
@@ -12,15 +12,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Reject placeholders and user axioms
         run: |
           if grep -RInE '(^|[^A-Za-z])(sorry|admit|axiom)([^A-Za-z]|$)' --include='*.lean' LeanQuantumQueries LeanQuantumQueries.lean; then
             echo 'Found a forbidden proof placeholder or axiom.'
             exit 1
           fi
-      - uses: leanprover/lean-action@v1
+
+      - name: Install Lean
+        uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          leanchecker: false
+          nanoda: false
+          use-mathlib-cache: false
+
+      - name: Generate manifest and restore mathlib cache
+        run: |
+          lake update
+          lake exe cache get
+
+      - name: Build and independently check
+        uses: leanprover/lean-action@v1
         with:
           build: true
+          test: false
+          lint: false
           leanchecker: true
           nanoda: true
           nanoda-allow-sorry: false
