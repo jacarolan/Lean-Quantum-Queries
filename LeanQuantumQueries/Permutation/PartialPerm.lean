@@ -15,6 +15,9 @@ def PartialPerm (N r : ℕ) :=
 
 deriving instance DecidableEq for PartialPerm
 
+instance (N r : ℕ) : Finite (PartialPerm N r) :=
+  Finite.of_injective Subtype.val Subtype.val_injective
+
 noncomputable instance (N r : ℕ) : Fintype (PartialPerm N r) :=
   Fintype.ofFinite _
 
@@ -70,7 +73,7 @@ def empty (N : ℕ) : PartialPerm N 0 :=
 /-- Add an edge whose domain and image are both unused. -/
 def extend (f : PartialPerm N r) (x y : Fin N)
     (hx : x ∉ f.dom) (hy : y ∉ f.ran) : PartialPerm N (r + 1) := by
-  refine ⟨Finset.insert (x, y) f.graph, ?_⟩
+  refine ⟨insert (x, y) f.graph, ?_⟩
   refine ⟨?_, ?_, ?_⟩
   · rw [Finset.card_insert_of_notMem]
     · simpa [f.card_graph]
@@ -105,7 +108,7 @@ def extend (f : PartialPerm N r) (x y : Fin N)
 
 @[simp] theorem graph_extend (f : PartialPerm N r) (x y : Fin N)
     (hx : x ∉ f.dom) (hy : y ∉ f.ran) :
-    (f.extend x y hx hy).graph = Finset.insert (x, y) f.graph := rfl
+    (f.extend x y hx hy).graph = insert (x, y) f.graph := rfl
 
 @[simp] theorem inserted_edge_mem (f : PartialPerm N r) (x y : Fin N)
     (hx : x ∉ f.dom) (hy : y ∉ f.ran) :
