@@ -30,6 +30,71 @@ jobs:
           lake update
           lake exe cache get
 
+      - name: Package local compiler and imported oleans
+        if: ${{ hashFiles('.bootstrap-local') != '' }}
+        run: |
+          tar -C "$HOME/.elan/toolchains" -I 'zstd -T0 -10' -cf lean-toolchain.tar.zst leanprover--lean4---v4.30.0
+          find .lake/packages -path '*/.lake/build/lib/lean' -type d -print0 \
+            | tar --null -T - -I 'zstd -T0 -10' -cf lean-oleans.tar.zst
+          split -b 350M -d -a 2 lean-oleans.tar.zst lean-oleans.part.
+          ls -lh lean-toolchain.tar.zst lean-oleans.part.*
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('.bootstrap-local') != '' }}
+        with:
+          name: lean-toolchain-v4.30.0
+          path: lean-toolchain.tar.zst
+          compression-level: 0
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('lean-oleans.part.00') != '' }}
+        with: {name: mathlib-oleans-00, path: lean-oleans.part.00, compression-level: 0}
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('lean-oleans.part.01') != '' }}
+        with: {name: mathlib-oleans-01, path: lean-oleans.part.01, compression-level: 0}
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('lean-oleans.part.02') != '' }}
+        with: {name: mathlib-oleans-02, path: lean-oleans.part.02, compression-level: 0}
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('lean-oleans.part.03') != '' }}
+        with: {name: mathlib-oleans-03, path: lean-oleans.part.03, compression-level: 0}
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('lean-oleans.part.04') != '' }}
+        with: {name: mathlib-oleans-04, path: lean-oleans.part.04, compression-level: 0}
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('lean-oleans.part.05') != '' }}
+        with: {name: mathlib-oleans-05, path: lean-oleans.part.05, compression-level: 0}
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('lean-oleans.part.06') != '' }}
+        with: {name: mathlib-oleans-06, path: lean-oleans.part.06, compression-level: 0}
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('lean-oleans.part.07') != '' }}
+        with: {name: mathlib-oleans-07, path: lean-oleans.part.07, compression-level: 0}
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('lean-oleans.part.08') != '' }}
+        with: {name: mathlib-oleans-08, path: lean-oleans.part.08, compression-level: 0}
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('lean-oleans.part.09') != '' }}
+        with: {name: mathlib-oleans-09, path: lean-oleans.part.09, compression-level: 0}
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('lean-oleans.part.10') != '' }}
+        with: {name: mathlib-oleans-10, path: lean-oleans.part.10, compression-level: 0}
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('lean-oleans.part.11') != '' }}
+        with: {name: mathlib-oleans-11, path: lean-oleans.part.11, compression-level: 0}
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('lean-oleans.part.12') != '' }}
+        with: {name: mathlib-oleans-12, path: lean-oleans.part.12, compression-level: 0}
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('lean-oleans.part.13') != '' }}
+        with: {name: mathlib-oleans-13, path: lean-oleans.part.13, compression-level: 0}
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('lean-oleans.part.14') != '' }}
+        with: {name: mathlib-oleans-14, path: lean-oleans.part.14, compression-level: 0}
+      - uses: actions/upload-artifact@v4
+        if: ${{ hashFiles('lean-oleans.part.15') != '' }}
+        with: {name: mathlib-oleans-15, path: lean-oleans.part.15, compression-level: 0}
+
       - name: Build and independently check
         uses: leanprover/lean-action@v1
         with:
