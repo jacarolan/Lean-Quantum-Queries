@@ -15,9 +15,9 @@ theorem sq_sum_le_three_mul_sum_sq
         ≤ (s.card : ℝ) * ∑ i ∈ s, (f i) ^ 2 :=
       sq_sum_le_card_mul_sum_sq
     _ ≤ 3 * ∑ i ∈ s, (f i) ^ 2 := by
-      gcongr
+      apply mul_le_mul_of_nonneg_right
       · exact_mod_cast hs
-      · positivity
+      · exact Finset.sum_nonneg fun _ _ => sq_nonneg _
 
 /-- If each output coordinate receives at most three level contributions,
 then the squared Euclidean norm of the sum is at most three times the sum of
@@ -95,8 +95,8 @@ theorem compression_from_one_level_bounds
       _ = 972 / (N - t) := by ring
   exact compression_constant N t opNorm hNt hOp hSq
 
-/-- A nonnegative sequence satisfying `δ (k+1) ≤ δ k + c` grows by at most
-`q*c` in `q` steps. -/
+/-- A sequence satisfying `δ (k+1) ≤ δ k + c` grows by at most `q*c` in
+`q` steps. -/
 theorem recurrence_bound
     (δ : ℕ → ℝ) (c : ℝ) (q : ℕ)
     (h0 : δ 0 ≤ 0)
@@ -111,7 +111,7 @@ theorem recurrence_bound
       calc
         δ (q + 1) ≤ δ q + c := hq
         _ ≤ q * c + c := by gcongr
-        _ = (q + 1) * c := by push_cast; ring
+        _ = (q + 1) * c := by norm_num [Nat.cast_succ]
 
 /-- The arithmetic conclusion used after the acceptance-gap estimate. -/
 theorem query_lower_bound_arithmetic
@@ -119,6 +119,7 @@ theorem query_lower_bound_arithmetic
     (hgap : Real.sqrt N ≤ 384 * Real.sqrt 2 * q) :
     Real.sqrt N / (384 * Real.sqrt 2) ≤ q := by
   have hden : 0 < 384 * Real.sqrt 2 := by positivity
-  exact (div_le_iff₀ hden).2 (by simpa [mul_assoc] using hgap)
+  exact (div_le_iff₀ hden).2
+    (by simpa [mul_assoc, mul_comm, mul_left_comm] using hgap)
 
 end LeanQuantumQueries.Compression
