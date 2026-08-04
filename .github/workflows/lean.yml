@@ -2,7 +2,7 @@ name: Lean CI
 
 on:
   push:
-    branches: ["main", "formalization", "machine-checkable"]
+    branches: ["main", "proof"]
   pull_request:
     branches: ["main"]
   workflow_dispatch:
@@ -25,10 +25,8 @@ jobs:
           curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
 
-      - name: Generate manifest and restore mathlib cache
-        run: |
-          lake update
-          lake exe cache get
+      - name: Restore mathlib cache
+        run: lake exe cache get
 
       - name: Build and independently check
         uses: leanprover/lean-action@v1
