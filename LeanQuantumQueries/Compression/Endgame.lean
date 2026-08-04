@@ -111,11 +111,12 @@ theorem recurrence_bound
       calc
         δ (q + 1) ≤ δ q + c := hq
         _ ≤ q * c + c := by gcongr
-        _ = (q + 1) * c := by norm_num [Nat.cast_succ]
+        _ = ((q : ℝ) + 1) * c := by ring
+        _ = ((q + 1 : ℕ) : ℝ) * c := by rw [Nat.cast_succ]
 
 /-- The arithmetic conclusion used after the acceptance-gap estimate. -/
 theorem query_lower_bound_arithmetic
-    (N q : ℝ) (hN : 0 < N)
+    (N q : ℝ) (_hN : 0 < N)
     (hgap : Real.sqrt N ≤ 384 * Real.sqrt 2 * q) :
     Real.sqrt N / (384 * Real.sqrt 2) ≤ q := by
   have hden : 0 < 384 * Real.sqrt 2 := by positivity
