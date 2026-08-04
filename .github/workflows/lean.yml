@@ -20,16 +20,10 @@ jobs:
             exit 1
           fi
 
-      - name: Install Lean
-        uses: leanprover/lean-action@v1
-        with:
-          auto-config: false
-          build: false
-          test: false
-          lint: false
-          leanchecker: false
-          nanoda: false
-          use-mathlib-cache: false
+      - name: Install Lean toolchain
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
 
       - name: Generate manifest and restore mathlib cache
         run: |
