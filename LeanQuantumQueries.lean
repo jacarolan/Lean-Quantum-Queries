@@ -1,1 +1,2 @@
+import LeanQuantumQueries.Compression.Banded
 import LeanQuantumQueries.Compression.Endgame
