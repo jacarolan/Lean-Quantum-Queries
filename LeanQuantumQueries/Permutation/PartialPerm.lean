@@ -76,33 +76,25 @@ def extend (f : PartialPerm N r) (x y : Fin N)
   refine ⟨insert (x, y) f.graph, ?_⟩
   refine ⟨?_, ?_, ?_⟩
   · rw [Finset.card_insert_of_notMem]
-    · simpa [f.card_graph]
+    · simp [f.card_graph]
     · intro hxy
       exact hx ((mem_dom_iff f x).2 ⟨y, hxy⟩)
   · intro x' y₁ y₂ h₁ h₂
     simp only [Finset.mem_insert] at h₁ h₂
     rcases h₁ with h₁ | h₁ <;> rcases h₂ with h₂ | h₂
     · simpa using congrArg Prod.snd (h₁.trans h₂.symm)
-    · have hxy : x' = x ∧ y₁ = y := Prod.mk.inj h₁
-      subst x'
-      subst y₁
+    · rcases Prod.mk.inj h₁ with ⟨rfl, rfl⟩
       exact False.elim (hx ((mem_dom_iff f x).2 ⟨y₂, h₂⟩))
-    · have hxy : x' = x ∧ y₂ = y := Prod.mk.inj h₂
-      subst x'
-      subst y₂
+    · rcases Prod.mk.inj h₂ with ⟨rfl, rfl⟩
       exact False.elim (hx ((mem_dom_iff f x).2 ⟨y₁, h₁⟩))
     · exact f.left_unique h₁ h₂
   · intro x₁ x₂ y' h₁ h₂
     simp only [Finset.mem_insert] at h₁ h₂
     rcases h₁ with h₁ | h₁ <;> rcases h₂ with h₂ | h₂
     · simpa using congrArg Prod.fst (h₁.trans h₂.symm)
-    · have hxy : x₁ = x ∧ y' = y := Prod.mk.inj h₁
-      subst x₁
-      subst y'
+    · rcases Prod.mk.inj h₁ with ⟨rfl, rfl⟩
       exact False.elim (hy ((mem_ran_iff f y).2 ⟨x₂, h₂⟩))
-    · have hxy : x₂ = x ∧ y' = y := Prod.mk.inj h₂
-      subst x₂
-      subst y'
+    · rcases Prod.mk.inj h₂ with ⟨rfl, rfl⟩
       exact False.elim (hy ((mem_ran_iff f y).2 ⟨x₁, h₁⟩))
     · exact f.right_unique h₁ h₂
 
@@ -112,12 +104,15 @@ def extend (f : PartialPerm N r) (x y : Fin N)
 
 @[simp] theorem inserted_edge_mem (f : PartialPerm N r) (x y : Fin N)
     (hx : x ∉ f.dom) (hy : y ∉ f.ran) :
-    (x, y) ∈ (f.extend x y hx hy).graph := by simp
+    (x, y) ∈ (f.extend x y hx hy).graph := by
+  rw [graph_extend]
+  exact Finset.mem_insert_self _ _
 
 @[simp] theorem edge_mem_extend_iff (f : PartialPerm N r) (x y : Fin N)
     (hx : x ∉ f.dom) (hy : y ∉ f.ran) (e : Fin N × Fin N) :
     e ∈ (f.extend x y hx hy).graph ↔ e = (x, y) ∨ e ∈ f.graph := by
-  simp [extend]
+  rw [graph_extend]
+  exact Finset.mem_insert
 
 /-- A partial permutation is compatible with another one if their union is still
 left- and right-unique. -/
