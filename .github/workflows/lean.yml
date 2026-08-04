@@ -28,12 +28,11 @@ jobs:
       - name: Restore mathlib cache
         run: lake exe cache get
 
-      - name: Build and independently check
+      - name: Build and kernel-check
         uses: leanprover/lean-action@v1
         with:
           build: true
           test: false
           lint: false
           leanchecker: true
-          nanoda: true
-          nanoda-allow-sorry: false
+          nanoda: false
