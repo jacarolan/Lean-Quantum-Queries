@@ -1,3 +1,4 @@
 import LeanQuantumQueries.Permutation.PartialPerm
+import LeanQuantumQueries.Permutation.Hilbert
 import LeanQuantumQueries.Compression.Banded
 import LeanQuantumQueries.Compression.Endgame
