@@ -83,19 +83,19 @@ def extend (f : PartialPerm N r) (x y : Fin N)
     simp only [Finset.mem_insert] at h₁ h₂
     rcases h₁ with h₁ | h₁ <;> rcases h₂ with h₂ | h₂
     · simpa using congrArg Prod.snd (h₁.trans h₂.symm)
-    · rcases Prod.mk.inj h₁ with ⟨rfl, rfl⟩
-      exact False.elim (hx ((mem_dom_iff f x).2 ⟨y₂, h₂⟩))
-    · rcases Prod.mk.inj h₂ with ⟨rfl, rfl⟩
-      exact False.elim (hx ((mem_dom_iff f x).2 ⟨y₁, h₁⟩))
+    · have hxx : x' = x := congrArg Prod.fst h₁
+      exact False.elim (hx ((mem_dom_iff f x).2 ⟨y₂, hxx ▸ h₂⟩))
+    · have hxx : x' = x := congrArg Prod.fst h₂
+      exact False.elim (hx ((mem_dom_iff f x).2 ⟨y₁, hxx ▸ h₁⟩))
     · exact f.left_unique h₁ h₂
   · intro x₁ x₂ y' h₁ h₂
     simp only [Finset.mem_insert] at h₁ h₂
     rcases h₁ with h₁ | h₁ <;> rcases h₂ with h₂ | h₂
     · simpa using congrArg Prod.fst (h₁.trans h₂.symm)
-    · rcases Prod.mk.inj h₁ with ⟨rfl, rfl⟩
-      exact False.elim (hy ((mem_ran_iff f y).2 ⟨x₂, h₂⟩))
-    · rcases Prod.mk.inj h₂ with ⟨rfl, rfl⟩
-      exact False.elim (hy ((mem_ran_iff f y).2 ⟨x₁, h₁⟩))
+    · have hyy : y' = y := congrArg Prod.snd h₁
+      exact False.elim (hy ((mem_ran_iff f y).2 ⟨x₂, hyy ▸ h₂⟩))
+    · have hyy : y' = y := congrArg Prod.snd h₂
+      exact False.elim (hy ((mem_ran_iff f y).2 ⟨x₁, hyy ▸ h₁⟩))
     · exact f.right_unique h₁ h₂
 
 @[simp] theorem graph_extend (f : PartialPerm N r) (x y : Fin N)
