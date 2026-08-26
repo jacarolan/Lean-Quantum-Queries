@@ -59,9 +59,10 @@ def identityPartial (S : QSubset N q) : PartialPerm N q := by
     have hay : a = y := congrArg Prod.snd heq
     exact ⟨hax ▸ ha, hay.symm.trans hax⟩
   · rintro ⟨hx, hyx⟩
-    change (x, y) ∈ S.1.map (diagonalEmbedding N)
+    subst y
+    change (x, x) ∈ S.1.map (diagonalEmbedding N)
     rw [Finset.mem_map]
-    exact ⟨x, hx, by simpa [hyx]⟩
+    exact ⟨x, hx, rfl⟩
 
 /-- Two partial identity permutations are always compatible. -/
 theorem identityPartial_compatible
