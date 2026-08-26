@@ -185,7 +185,12 @@ theorem spectral_trimming
           rw [Finset.sum_div]
     _ ≤ beta / (A * beta) := by
           apply (div_le_div_iff_of_pos_right hden).2
-          exact (Finset.sum_le_sum_of_subset (Finset.filter_subset _ _)).trans hpurity
+          have hsub :
+              (∑ i with lam i > A * beta, (lam i) ^ 2) ≤
+                ∑ i, (lam i) ^ 2 := by
+            gcongr with i hi
+            exact sq_nonneg (lam i)
+          exact hsub.trans hpurity
     _ = 1 / A := by
           field_simp [hA.ne', hbeta.ne']
 
