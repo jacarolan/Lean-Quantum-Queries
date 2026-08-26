@@ -33,13 +33,20 @@ noncomputable def qSubsetEquivOverlapSigma (S : QSubset N q) :
     · exact Fin.ext T.2
     · rfl
 
+@[simp] theorem qSubsetEquivOverlapSigma_symm_apply
+    (S : QSubset N q) (j : Fin (q + 1))
+    (T : SubsetOverlap S j.1) :
+    (qSubsetEquivOverlapSigma S).symm ⟨j, T⟩ = T.1 := rfl
+
 /-- The cardinality of the union of two `q`-subsets in an overlap class. -/
 theorem card_union_of_subsetOverlap
     (S : QSubset N q) (j : ℕ) (T : SubsetOverlap S j) :
     (S.1 ∪ T.1.1).card = q + (q - j) := by
   have hjq : j ≤ q := by
-    rw [← T.2, ← S.2]
-    exact Finset.card_le_card Finset.inter_subset_left
+    calc
+      j = (S.1 ∩ T.1.1).card := T.2.symm
+      _ ≤ S.1.card := Finset.card_le_card Finset.inter_subset_left
+      _ = q := S.2
   have h := Finset.card_union_add_card_inter S.1 T.1.1
   rw [S.2, T.1.2, T.2] at h
   omega
@@ -66,8 +73,12 @@ theorem sum_collisionKernel_row_grouped
   rw [Fintype.sum_sigma]
   apply Fintype.sum_congr
   intro j
-  simp [collisionKernel, card_union_of_subsetOverlap,
-    card_subsetOverlap]
+  simp_rw [qSubsetEquivOverlapSigma_symm_apply, collisionKernel,
+    card_union_of_subsetOverlap]
+  rw [Finset.sum_const]
+  simp only [Finset.card_univ, nsmul_eq_mul]
+  rw [card_subsetOverlap]
+  ring
 
 end PartialPerm
 end LeanQuantumQueries.Permutation
