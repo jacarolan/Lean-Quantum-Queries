@@ -194,6 +194,9 @@ theorem collisionFreeMomentMatrix_trace
   rw [collisionFreeMomentMatrix, Matrix.trace_smul,
     trace_incidence_gram]
   unfold momentNormalizer
+  change
+    (1 / ((Nat.factorial N : ℝ) * Nat.choose N q)) *
+      ((Nat.factorial N : ℝ) * Nat.choose N q) = 1
   field_simp [hfac, hchoose]
 
 end PartialPerm
