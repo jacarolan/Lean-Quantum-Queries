@@ -108,7 +108,7 @@ theorem collisionFreePurity_eq
     exact_mod_cast hdescNat
   rw [collisionFreePurity]
   simp_rw [sum_collisionKernel_row_eq (h2qN := h2qN)]
-  rw [Finset.sum_const, card_qSubset]
+  rw [Finset.sum_const, Finset.card_univ, card_qSubset]
   simp only [nsmul_eq_mul]
   rw [hdesc]
   field_simp [hchoose, hfac]
