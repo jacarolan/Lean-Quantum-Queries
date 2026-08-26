@@ -1,4 +1,4 @@
-name: Completion Count CI
+name: Joint Moment CI
 
 on:
   push:
@@ -14,7 +14,8 @@ jobs:
       - name: Reject proof placeholders
         run: |
           if grep -RInE '(^|[^A-Za-z])(sorry|admit|axiom)([^A-Za-z]|$)' \
-              LeanQuantumQueries/Permutation/CompletionCount.lean; then
+              LeanQuantumQueries/Permutation/CompletionCount.lean \
+              LeanQuantumQueries/Permutation/JointMoment.lean; then
             echo 'Found a forbidden proof placeholder.'
             exit 1
           fi
@@ -28,4 +29,4 @@ jobs:
         run: lake exe cache get
 
       - name: Elaborate and kernel-check the proof
-        run: lake build LeanQuantumQueries.Permutation.CompletionCount
+        run: lake build LeanQuantumQueries.Permutation.JointMoment
