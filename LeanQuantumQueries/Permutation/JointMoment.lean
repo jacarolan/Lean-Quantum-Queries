@@ -175,7 +175,13 @@ theorem sum_extensionIndicator_mul
       (Fintype.card
         {π : Equiv.Perm (Fin N) // f.Extends π ∧ g.Extends π} : ℚ) := by
   classical
-  simp [extensionIndicator, Fintype.card_subtype]
+  rw [Fintype.card_subtype]
+  rw [← Finset.sum_boole (R := ℚ)
+    (fun π : Equiv.Perm (Fin N) => f.Extends π ∧ g.Extends π) Finset.univ]
+  apply Finset.sum_congr rfl
+  intro π _
+  by_cases hf : f.Extends π <;> by_cases hg : g.Extends π <;>
+    simp [extensionIndicator, hf, hg]
 
 /-- Exact factorial-ratio form of the joint moment in the compatible case. -/
 theorem jointMoment_of_compatible
@@ -187,6 +193,7 @@ theorem jointMoment_of_compatible
   classical
   rw [jointMoment, f.sum_extensionIndicator_mul g,
     f.card_common_completions_of_compatible g h, Fintype.card_perm]
+  simp
 
 /-- The joint moment vanishes in the incompatible case. -/
 theorem jointMoment_of_incompatible
