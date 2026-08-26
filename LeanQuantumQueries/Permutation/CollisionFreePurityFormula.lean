@@ -78,6 +78,7 @@ theorem sum_collisionKernel_row_grouped
   rw [Finset.sum_const]
   simp only [Finset.card_univ, nsmul_eq_mul]
   rw [card_subsetOverlap]
+  push_cast
   ring
 
 end PartialPerm
