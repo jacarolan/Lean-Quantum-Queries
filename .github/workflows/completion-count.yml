@@ -1,4 +1,4 @@
-name: Exact Collision-Free Purity CI
+name: Overlap Factor Bound CI
 
 on:
   push:
@@ -19,7 +19,8 @@ jobs:
               LeanQuantumQueries/Permutation/CollisionFreeFlatness.lean \
               LeanQuantumQueries/Permutation/CollisionFreePurity.lean \
               LeanQuantumQueries/Permutation/CollisionFreePurityFormula.lean \
-              LeanQuantumQueries/Permutation/CollisionFreePurityClosed.lean; then
+              LeanQuantumQueries/Permutation/CollisionFreePurityClosed.lean \
+              LeanQuantumQueries/Permutation/OverlapFactorBound.lean; then
             echo 'Found a forbidden proof placeholder.'
             exit 1
           fi
@@ -33,4 +34,4 @@ jobs:
         run: lake exe cache get
 
       - name: Elaborate and kernel-check the proof
-        run: lake build LeanQuantumQueries.Permutation.CollisionFreePurityClosed
+        run: lake build LeanQuantumQueries.Permutation.OverlapFactorBound
