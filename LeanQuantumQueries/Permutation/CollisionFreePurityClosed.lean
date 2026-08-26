@@ -112,7 +112,6 @@ theorem collisionFreePurity_eq
   simp only [nsmul_eq_mul]
   rw [hdesc]
   field_simp [hchoose, hfac]
-  ring
 
 end PartialPerm
 end LeanQuantumQueries.Permutation
