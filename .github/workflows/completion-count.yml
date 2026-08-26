@@ -28,4 +28,4 @@ jobs:
         run: lake exe cache get
 
       - name: Elaborate and kernel-check the proof
-        run: lake env lean LeanQuantumQueries/Permutation/CompletionCount.lean
+        run: lake build LeanQuantumQueries.Permutation.CompletionCount
