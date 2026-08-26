@@ -189,10 +189,10 @@ theorem sum_agreementIndicator_mul
     _ = (Fintype.card
         {σ : Equiv.Perm (Fin N) //
           AgreesOnFinset π σ (S.1 ∪ T.1)} : ℝ) := by
-          apply congrArg Nat.cast
-          apply Fintype.card_congr
-          exact Equiv.subtypeEquivRight
-            (fun σ => agreesOn_and_iff_union π σ S T)
+          exact_mod_cast
+            Fintype.card_congr
+              (Equiv.subtypeEquivRight
+                (fun σ => agreesOn_and_iff_union π σ S T))
     _ = (Nat.factorial (N - (S.1 ∪ T.1).card) : ℝ) := by
           rw [card_agreeing_on_finset]
 
