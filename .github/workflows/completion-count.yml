@@ -1,4 +1,4 @@
-name: Collision-Free Flatness CI
+name: Collision-Free Purity CI
 
 on:
   push:
@@ -16,7 +16,8 @@ jobs:
           if grep -RInE '(^|[^A-Za-z])(sorry|admit|axiom)([^A-Za-z]|$)' \
               LeanQuantumQueries/Permutation/CompletionCount.lean \
               LeanQuantumQueries/Permutation/JointMoment.lean \
-              LeanQuantumQueries/Permutation/CollisionFreeFlatness.lean; then
+              LeanQuantumQueries/Permutation/CollisionFreeFlatness.lean \
+              LeanQuantumQueries/Permutation/CollisionFreePurity.lean; then
             echo 'Found a forbidden proof placeholder.'
             exit 1
           fi
@@ -30,4 +31,4 @@ jobs:
         run: lake exe cache get
 
       - name: Elaborate and kernel-check the proof
-        run: lake build LeanQuantumQueries.Permutation.CollisionFreeFlatness
+        run: lake build LeanQuantumQueries.Permutation.CollisionFreePurity
