@@ -26,22 +26,33 @@ def sharedCard (f g : PartialPerm N q) : ℕ :=
 
 /-- The shared graph has at most `q` edges. -/
 theorem sharedCard_le (f g : PartialPerm N q) : f.sharedCard g ≤ q := by
-  rw [sharedCard, ← f.card_graph]
-  exact Finset.card_le_card (Finset.inter_subset_left)
+  simpa [sharedCard, f.card_graph] using
+    (Finset.card_le_card (Finset.inter_subset_left : f.graph ∩ g.graph ⊆ f.graph))
 
 /-- The union size is determined by the number of shared edges. -/
 theorem card_union_graph_eq (f g : PartialPerm N q) :
     (f.graph ∪ g.graph).card = 2 * q - f.sharedCard g := by
   have h := Finset.card_union_add_card_inter f.graph g.graph
-  rw [f.card_graph, g.card_graph] at h
+  have hf := f.card_graph
+  have hg := g.card_graph
+  unfold sharedCard
   omega
 
 /-- Graphs with `q` edges, forgetting the partial-permutation constraints. -/
 def GraphOfCard (N q : ℕ) :=
   {s : Finset (Fin N × Fin N) // s.card = q}
 
-noncomputable instance (N q : ℕ) : Fintype (GraphOfCard N q) :=
-  Fintype.ofFinite _
+noncomputable instance (N q : ℕ) : Fintype (GraphOfCard N q) := by
+  classical
+  unfold GraphOfCard
+  infer_instance
+
+/-- Exact cardinality of the ambient family of `q`-edge graphs. -/
+theorem card_graphOfCard (N q : ℕ) :
+    Fintype.card (GraphOfCard N q) = Nat.choose (N * N) q := by
+  change Fintype.card
+      {s : Finset (Fin N × Fin N) // s.card = q} = Nat.choose (N * N) q
+  simpa using (Fintype.card_finset_len (α := Fin N × Fin N) q)
 
 /-- Forgetting the uniqueness constraints is injective. -/
 def graphEmbedding (N q : ℕ) : PartialPerm N q ↪ GraphOfCard N q where
@@ -49,7 +60,7 @@ def graphEmbedding (N q : ℕ) : PartialPerm N q ↪ GraphOfCard N q where
   inj' := by
     intro f g h
     apply Subtype.ext
-    exact congrArg Subtype.val h
+    exact congrArg (fun z : GraphOfCard N q => z.1) h
 
 /-- A crude but useful upper bound on the number of size-`q` partial
 permutations. -/
@@ -58,9 +69,7 @@ theorem card_partialPerm_le_choose (N q : ℕ) :
   calc
     Fintype.card (PartialPerm N q) ≤ Fintype.card (GraphOfCard N q) :=
       Fintype.card_le_of_injective (graphEmbedding N q) (graphEmbedding N q).injective
-    _ = Nat.choose (N * N) q := by
-      simpa [GraphOfCard, Fintype.card_prod] using
-        (Fintype.card_finset_len (α := Fin N × Fin N) q)
+    _ = Nat.choose (N * N) q := card_graphOfCard N q
 
 /-- The class of compatible size-`q` partial permutations having exactly `j`
 shared graph edges with `f`. -/
@@ -68,8 +77,10 @@ def CompatibleShared (f : PartialPerm N q) (j : ℕ) :=
   {g : PartialPerm N q // f.Compatible g ∧ f.sharedCard g = j}
 
 noncomputable instance (f : PartialPerm N q) (j : ℕ) :
-    Fintype (CompatibleShared f j) :=
-  Fintype.ofFinite _
+    Fintype (CompatibleShared f j) := by
+  classical
+  unfold CompatibleShared
+  infer_instance
 
 /-- The elementary code used to bound an overlap class: record the shared
 edges and all remaining edges.  The second component deliberately forgets all
@@ -79,21 +90,21 @@ def SharedFreshCode (f : PartialPerm N q) (j : ℕ) :=
   GraphOfCard N (q - j)
 
 noncomputable instance (f : PartialPerm N q) (j : ℕ) :
-    Fintype (SharedFreshCode f j) :=
-  Fintype.ofFinite _
+    Fintype (SharedFreshCode f j) := by
+  classical
+  unfold SharedFreshCode
+  infer_instance
 
 /-- Decompose a compatible graph into the part shared with `f` and the
 remaining edges. -/
 def sharedFreshCode (f : PartialPerm N q) (j : ℕ) :
     CompatibleShared f j → SharedFreshCode f j := fun g =>
   ⟨⟨f.graph ∩ g.1.graph, Finset.inter_subset_left,
-      by simpa [sharedCard] using g.2.2.symm⟩,
+      by simpa [sharedCard] using g.2.2⟩,
     ⟨g.1.graph \ f.graph, by
-      have hinter : (g.1.graph ∩ f.graph).card = j := by
-        simpa [sharedCard, Finset.inter_comm] using g.2.2
-      rw [Finset.card_sdiff]
-      · rw [g.1.card_graph, hinter]
-      · exact Finset.inter_subset_left⟩⟩
+      rw [Finset.card_sdiff, g.1.card_graph]
+      simpa [sharedCard, Finset.inter_comm] using
+        congrArg (fun n => q - n) g.2.2⟩⟩
 
 /-- The shared/fresh decomposition remembers the original graph. -/
 theorem sharedFreshCode_injective (f : PartialPerm N q) (j : ℕ) :
@@ -111,7 +122,7 @@ theorem sharedFreshCode_injective (f : PartialPerm N q) (j : ℕ) :
         e ∈ f.graph ∩ g.graph ∨ e ∈ g.graph \ f.graph := by
     simp only [Finset.mem_inter, Finset.mem_sdiff]
     tauto
-  rw [hreconstruct g₁, hreconstruct g₂, hs, ht]
+  rw [hreconstruct g₁.1, hreconstruct g₂.1, hs, ht]
 
 /-- Cardinality of the shared-edge part of the code. -/
 theorem card_sharedCode (f : PartialPerm N q) (j : ℕ) :
@@ -138,13 +149,13 @@ theorem card_compatibleShared_le
       Fintype.card_le_of_injective (sharedFreshCode f j)
         (sharedFreshCode_injective f j)
     _ = Nat.choose q j * Nat.choose (N * N) (q - j) := by
-      simp [SharedFreshCode, GraphOfCard, card_sharedCode,
-        Fintype.card_finset_len, Fintype.card_prod]
+      rw [Fintype.card_prod, card_sharedCode, card_graphOfCard]
 
 /-- The subexponential combinatorial factor appearing in the collision-free
 purity bound. -/
 def rookFactor (q : ℕ) : ℚ :=
-  ∑ a in Finset.range (q + 1), (Nat.choose q a : ℚ) / Nat.factorial a
+  ∑ a ∈ Finset.range (q + 1),
+    (Nat.choose q a : ℚ) / Nat.factorial a
 
 /-- A finite-family version of the spectral trimming estimate.  Interpreting
 `lam i` as the eigenvalues of a density matrix, all eigenvalues above
@@ -154,29 +165,25 @@ theorem spectral_trimming
     (lam : ι → ℝ) (beta A : ℝ)
     (hlam : ∀ i, 0 ≤ lam i)
     (hpurity : ∑ i, (lam i) ^ 2 ≤ beta)
-    (hbeta : 0 ≤ beta) (hA : 0 < A) :
+    (hbeta : 0 < beta) (hA : 0 < A) :
     ∑ i with lam i > A * beta, lam i ≤ 1 / A := by
-  have hAbeta : 0 ≤ A * beta := mul_nonneg hA.le hbeta
+  have hden : 0 < A * beta := mul_pos hA hbeta
   calc
     ∑ i with lam i > A * beta, lam i
         ≤ ∑ i with lam i > A * beta, (lam i) ^ 2 / (A * beta) := by
           apply Finset.sum_le_sum
           intro i hi
           have hi' : A * beta < lam i := by simpa using hi
-          by_cases hb0 : beta = 0
-          · subst beta
-            simp at hi'
-          · have hden : 0 < A * beta := mul_pos hA (lt_of_le_of_ne hbeta (Ne.symm hb0))
-            rw [le_div_iff₀ hden]
-            nlinarith [hlam i]
+          rw [le_div_iff₀ hden]
+          nlinarith [hlam i]
+    _ = (∑ i with lam i > A * beta, (lam i) ^ 2) / (A * beta) := by
+          rw [Finset.sum_div]
     _ ≤ beta / (A * beta) := by
-          apply div_le_div_of_nonneg_right _ hAbeta
+          apply (div_le_div_iff_of_pos_right hden).2
           exact (Finset.sum_le_sum_of_subset (Finset.filter_subset _ _)
-            (fun _ _ _ => (sq_nonneg _))).trans hpurity
-    _ ≤ 1 / A := by
-          by_cases hb0 : beta = 0
-          · simp [hb0, hA.ne']
-          · field_simp [hA.ne', hb0]
+            (fun _ _ _ => sq_nonneg _)).trans hpurity
+    _ = 1 / A := by
+          field_simp [hA.ne', hbeta.ne']
 
 end PartialPerm
 end LeanQuantumQueries.Permutation
