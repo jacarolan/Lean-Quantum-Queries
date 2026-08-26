@@ -61,7 +61,7 @@ theorem trace_incidence_gram_sq_eq_cogram_sq (N q : ℕ) :
         Matrix.trace (Bᴴ * (B * (Bᴴ * B))) := by
           simp [Matrix.mul_assoc]
     _ = Matrix.trace ((B * (Bᴴ * B)) * Bᴴ) := by
-          exact Matrix.trace_mul_cycle _ _
+          exact Matrix.trace_mul_comm _ _
     _ = Matrix.trace ((B * Bᴴ) * (B * Bᴴ)) := by
           simp [Matrix.mul_assoc]
     _ = Matrix.trace (permutationCogram N q * permutationCogram N q) := rfl
@@ -71,7 +71,8 @@ theorem trace_permutationCogram_sq (N q : ℕ) :
     Matrix.trace (permutationCogram N q * permutationCogram N q) =
       rawAgreementPurity N q := by
   classical
-  rw [Matrix.trace, Matrix.diag]
+  unfold Matrix.trace
+  simp only [Matrix.diag_apply]
   simp_rw [Matrix.mul_apply, permutationCogram_apply]
   unfold rawAgreementPurity
   apply Fintype.sum_congr
