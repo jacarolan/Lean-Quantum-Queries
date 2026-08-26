@@ -71,7 +71,10 @@ theorem overlapTerm_le
           (2 : ℚ) ^ q := by
       have hadd : a + j = q := by
         simp [a, Nat.sub_add_cancel hj]
+      have hpa : (2 : ℚ) ^ a ≠ 0 := by positivity
+      have hpj : (2 : ℚ) ^ j ≠ 0 := by positivity
       rw [← hadd, pow_add]
+      field_simp [hpa, hpj]
       ring
 
 /-- The binomial sum needed after applying the termwise estimate. -/
@@ -79,9 +82,8 @@ theorem sum_choose_mul_two_pow (q : ℕ) :
     (∑ j : Fin (q + 1),
         (Nat.choose q j.1 : ℚ) * (2 : ℚ) ^ j.1) =
       (3 : ℚ) ^ q := by
-  rw [Fin.sum_univ_eq_sum_range]
   have h := (add_pow (2 : ℚ) 1 q).symm
-  simpa [mul_comm, mul_left_comm, mul_assoc] using h
+  simpa [← Fin.sum_univ_eq_sum_range, mul_comm, mul_left_comm, mul_assoc] using h
 
 /-- Exponential upper bound on the residual factor in the exact purity. -/
 theorem overlapFactor_le (q : ℕ) :
@@ -125,6 +127,9 @@ theorem overlapFactor_pos (q : ℕ) : 0 < overlapFactor q := by
           (Nat.choose q j.1 : ℚ) /
             Nat.factorial (q - j.1) := by
     exact Finset.single_le_sum
+      (f := fun j : Fin (q + 1) =>
+        (Nat.choose q j.1 : ℚ) /
+          Nat.factorial (q - j.1))
       (fun j _ => by positivity)
       (Finset.mem_univ jq)
   exact hterm.trans_le hle
