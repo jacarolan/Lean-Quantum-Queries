@@ -18,32 +18,44 @@ theorem Matrix.IsHermitian.sum_sq_eigenvalues_eq_trace_sq
     (∑ i, (hA.eigenvalues i) ^ 2) = Matrix.trace (A * A) := by
   let U := hA.eigenvectorUnitary
   let D : Matrix n n ℝ := Matrix.diagonal hA.eigenvalues
-  have hspectral : A = (U : Matrix n n ℝ) * D * star (U : Matrix n n ℝ) := by
-    simpa [U, D, Matrix.conjStarAlgAut_apply, Function.comp_def] using
+  have hspectral :
+      A = (U : Matrix n n ℝ) * D * star (U : Matrix n n ℝ) := by
+    simpa [U, D, Unitary.conjStarAlgAut_apply, Function.comp_def] using
       hA.spectral_theorem
-  rw [hspectral]
+  have hunit :
+      star (U : Matrix n n ℝ) * (U : Matrix n n ℝ) = 1 :=
+    Unitary.coe_star_mul_self U
+  have hmul :
+      (((U : Matrix n n ℝ) * D * star (U : Matrix n n ℝ)) *
+          ((U : Matrix n n ℝ) * D * star (U : Matrix n n ℝ))) =
+        (U : Matrix n n ℝ) * (D * D) * star (U : Matrix n n ℝ) := by
+    calc
+      (((U : Matrix n n ℝ) * D * star (U : Matrix n n ℝ)) *
+          ((U : Matrix n n ℝ) * D * star (U : Matrix n n ℝ))) =
+        (U : Matrix n n ℝ) * D *
+          (star (U : Matrix n n ℝ) * (U : Matrix n n ℝ)) *
+          D * star (U : Matrix n n ℝ) := by
+            simp only [Matrix.mul_assoc]
+      _ = (U : Matrix n n ℝ) * D * 1 * D *
+          star (U : Matrix n n ℝ) := by rw [hunit]
+      _ = (U : Matrix n n ℝ) * (D * D) *
+          star (U : Matrix n n ℝ) := by
+            simp [Matrix.mul_assoc]
+  have htraceConj :
+      Matrix.trace
+          ((U : Matrix n n ℝ) * (D * D) * star (U : Matrix n n ℝ)) =
+        Matrix.trace (D * D) := by
+    rw [Matrix.trace_mul_cycle]
+    rw [hunit]
+    simp
   calc
     (∑ i, (hA.eigenvalues i) ^ 2) = Matrix.trace (D * D) := by
-      simp [D, Matrix.trace, Matrix.mul_apply, pow_two]
+      simp [D, pow_two]
     _ = Matrix.trace
         (((U : Matrix n n ℝ) * D * star (U : Matrix n n ℝ)) *
           ((U : Matrix n n ℝ) * D * star (U : Matrix n n ℝ))) := by
-      have hunit : star (U : Matrix n n ℝ) * (U : Matrix n n ℝ) = 1 :=
-        U.property
-      calc
-        Matrix.trace (D * D) =
-            Matrix.trace ((D * D) *
-              (star (U : Matrix n n ℝ) * (U : Matrix n n ℝ))) := by
-                rw [hunit, Matrix.mul_one]
-        _ = Matrix.trace
-            ((U : Matrix n n ℝ) * (D * D) *
-              star (U : Matrix n n ℝ)) := by
-                rw [← Matrix.trace_mul_cycle]
-                simp [Matrix.mul_assoc]
-        _ = Matrix.trace
-            (((U : Matrix n n ℝ) * D * star (U : Matrix n n ℝ)) *
-              ((U : Matrix n n ℝ) * D * star (U : Matrix n n ℝ))) := by
-                rw [hunit]
-                simp [Matrix.mul_assoc]
+      rw [hmul, htraceConj]
+    _ = Matrix.trace (A * A) := by
+      rw [hspectral]
 
 end LeanQuantumQueries.Permutation
