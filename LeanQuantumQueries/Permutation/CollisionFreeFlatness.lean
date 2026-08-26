@@ -116,7 +116,9 @@ theorem sharedFreshCode_injective (f : PartialPerm N q) (j : ℕ) :
     congrArg (fun z => z.2.1) h
   apply Subtype.ext
   apply Subtype.ext
-  ext e
+  apply Finset.ext
+  intro e
+  change e ∈ g₁.1.graph ↔ e ∈ g₂.1.graph
   have hreconstruct (g : PartialPerm N q) :
       e ∈ g.graph ↔
         e ∈ f.graph ∩ g.graph ∨ e ∈ g.graph \ f.graph := by
@@ -149,6 +151,9 @@ theorem card_compatibleShared_le
       Fintype.card_le_of_injective (sharedFreshCode f j)
         (sharedFreshCode_injective f j)
     _ = Nat.choose q j * Nat.choose (N * N) (q - j) := by
+      change Fintype.card
+          ({s : Finset (Fin N × Fin N) // s ⊆ f.graph ∧ s.card = j} ×
+            GraphOfCard N (q - j)) = _
       rw [Fintype.card_prod, card_sharedCode, card_graphOfCard]
 
 /-- The subexponential combinatorial factor appearing in the collision-free
@@ -180,8 +185,7 @@ theorem spectral_trimming
           rw [Finset.sum_div]
     _ ≤ beta / (A * beta) := by
           apply (div_le_div_iff_of_pos_right hden).2
-          exact (Finset.sum_le_sum_of_subset (Finset.filter_subset _ _)
-            (fun _ _ _ => sq_nonneg _)).trans hpurity
+          exact (Finset.sum_le_sum_of_subset (Finset.filter_subset _ _)).trans hpurity
     _ = 1 / A := by
           field_simp [hA.ne', hbeta.ne']
 
