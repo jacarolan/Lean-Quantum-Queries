@@ -155,9 +155,11 @@ theorem trace_incidence_gram
     Matrix.trace ((extensionIncidence N q)ᴴ * extensionIncidence N q) =
       (Nat.factorial N : ℝ) * Nat.choose N q := by
   classical
-  rw [Matrix.trace, Matrix.diag, Finset.sum_comm]
-  simp only [Matrix.mul_apply, Matrix.conjTranspose_apply, starRingEnd_apply,
-    star_trivial, extensionIncidence]
+  unfold Matrix.trace
+  simp only [Matrix.diag_apply, Matrix.mul_apply,
+    Matrix.conjTranspose_apply, starRingEnd_apply, star_trivial,
+    extensionIncidence]
+  rw [Finset.sum_comm]
   calc
     (∑ π : Equiv.Perm (Fin N),
         ∑ f : PartialPerm N q,
@@ -192,7 +194,7 @@ theorem collisionFreeMomentMatrix_trace
   rw [collisionFreeMomentMatrix, Matrix.trace_smul,
     trace_incidence_gram]
   unfold momentNormalizer
-  field_simp [hfac, hchoose]
+  simp [smul_eq_mul, hfac, hchoose]
 
 end PartialPerm
 end LeanQuantumQueries.Permutation
