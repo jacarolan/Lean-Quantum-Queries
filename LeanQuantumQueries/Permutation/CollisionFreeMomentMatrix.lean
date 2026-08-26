@@ -194,7 +194,7 @@ theorem collisionFreeMomentMatrix_trace
   rw [collisionFreeMomentMatrix, Matrix.trace_smul,
     trace_incidence_gram]
   unfold momentNormalizer
-  simp [smul_eq_mul, hfac, hchoose]
+  field_simp [hfac, hchoose]
 
 end PartialPerm
 end LeanQuantumQueries.Permutation
