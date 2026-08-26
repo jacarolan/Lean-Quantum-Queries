@@ -1,4 +1,4 @@
-name: Collision-Free Moment Matrix CI
+name: Collision-Free Agreement CI
 
 on:
   push:
@@ -24,7 +24,8 @@ jobs:
               LeanQuantumQueries/Permutation/CollisionKernelMoment.lean \
               LeanQuantumQueries/Permutation/CollisionFreeSpectralCutoff.lean \
               LeanQuantumQueries/Permutation/OneCallFlatness.lean \
-              LeanQuantumQueries/Permutation/CollisionFreeMomentMatrix.lean; then
+              LeanQuantumQueries/Permutation/CollisionFreeMomentMatrix.lean \
+              LeanQuantumQueries/Permutation/CollisionFreeAgreement.lean; then
             echo 'Found a forbidden proof placeholder.'
             exit 1
           fi
@@ -38,4 +39,4 @@ jobs:
         run: lake exe cache get
 
       - name: Elaborate and kernel-check the complete proof
-        run: lake build LeanQuantumQueries.Permutation.CollisionFreeMomentMatrix
+        run: lake build LeanQuantumQueries.Permutation.CollisionFreeAgreement
