@@ -188,8 +188,9 @@ theorem spectral_trimming
           have hsub :
               (∑ i with lam i > A * beta, (lam i) ^ 2) ≤
                 ∑ i, (lam i) ^ 2 := by
-            gcongr with i hi
-            exact sq_nonneg (lam i)
+            exact Finset.sum_le_sum_of_subset_of_nonneg
+              (Finset.filter_subset _ _)
+              (fun i _ _ => sq_nonneg (lam i))
           exact hsub.trans hpurity
     _ = 1 / A := by
           field_simp [hA.ne', hbeta.ne']
