@@ -108,8 +108,8 @@ theorem flat_sector_of_purity
         ∑ i, lam i := by
           simpa [flatIndices, not_lt] using
             (Finset.sum_filter_add_sum_filter_not
-              (s := (Finset.univ : Finset ι)) lam
-              (fun i => lam i > A * beta))
+              (s := (Finset.univ : Finset ι))
+              (fun i => lam i > A * beta) lam)
       _ = 1 := htrace
   constructor
   · linarith
