@@ -1,0 +1,31 @@
+name: Trace Cutoff CI
+
+on:
+  push:
+    branches: ["completion-count-formalization"]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof placeholders
+        run: |
+          if grep -RInE '(^|[^A-Za-z])(sorry|admit|axiom)([^A-Za-z]|$)' \
+              LeanQuantumQueries/Permutation/TraceCutoff.lean; then
+            echo 'Found a forbidden proof placeholder.'
+            exit 1
+          fi
+
+      - name: Install Lean toolchain
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Restore Mathlib cache
+        run: lake exe cache get
+
+      - name: Elaborate and kernel-check the trace inequality
+        run: lake build LeanQuantumQueries.Permutation.TraceCutoff
