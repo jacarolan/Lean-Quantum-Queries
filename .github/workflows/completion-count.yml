@@ -1,4 +1,4 @@
-name: Overlap Factor Bound CI
+name: One-Call Flatness CI
 
 on:
   push:
@@ -20,7 +20,10 @@ jobs:
               LeanQuantumQueries/Permutation/CollisionFreePurity.lean \
               LeanQuantumQueries/Permutation/CollisionFreePurityFormula.lean \
               LeanQuantumQueries/Permutation/CollisionFreePurityClosed.lean \
-              LeanQuantumQueries/Permutation/OverlapFactorBound.lean; then
+              LeanQuantumQueries/Permutation/OverlapFactorBound.lean \
+              LeanQuantumQueries/Permutation/CollisionKernelMoment.lean \
+              LeanQuantumQueries/Permutation/CollisionFreeSpectralCutoff.lean \
+              LeanQuantumQueries/Permutation/OneCallFlatness.lean; then
             echo 'Found a forbidden proof placeholder.'
             exit 1
           fi
@@ -33,5 +36,5 @@ jobs:
       - name: Restore Mathlib cache
         run: lake exe cache get
 
-      - name: Elaborate and kernel-check the proof
-        run: lake build LeanQuantumQueries.Permutation.OverlapFactorBound
+      - name: Elaborate and kernel-check the complete proof
+        run: lake build LeanQuantumQueries.Permutation.OneCallFlatness
