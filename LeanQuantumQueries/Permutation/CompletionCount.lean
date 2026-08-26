@@ -5,7 +5,7 @@ import LeanQuantumQueries.Permutation.PartialPerm
 
 This file proves the elementary counting lemma used in the partial-bijection
 proof of the one-call quantum attack.  An `r`-edge partial permutation on
-`Fin N` has exactly `(N - r)!` extensions to a total permutation.
+`Fin N` has exactly `Nat.factorial (N - r)` extensions to a total permutation.
 
 The proof chooses one completion `baseCompletion f`.  Left multiplication by
 its inverse identifies every other completion with a permutation supported on
@@ -111,15 +111,16 @@ noncomputable def completionEquivComplement (f : PartialPerm N r) :
       exact f.baseCompletion_extends e he⟩
   left_inv π := by
     apply Subtype.ext
-    simp [mul_assoc]
+    simp
   right_inv q := by
     apply Subtype.ext
-    simp [mul_assoc]
+    simp
 
 /-- Exact completion count: an `r`-edge partial permutation on `N` points has
-exactly `(N - r)!` total extensions. -/
+exactly `Nat.factorial (N - r)` total extensions. -/
 theorem card_completions (f : PartialPerm N r) :
-    Fintype.card {π : Equiv.Perm (Fin N) // f.Extends π} = (N - r)! := by
+    Fintype.card {π : Equiv.Perm (Fin N) // f.Extends π} =
+      Nat.factorial (N - r) := by
   classical
   calc
     Fintype.card {π : Equiv.Perm (Fin N) // f.Extends π} =
@@ -128,8 +129,8 @@ theorem card_completions (f : PartialPerm N r) :
       Fintype.card_congr f.completionEquivComplement
     _ = (permsOfFinset f.domᶜ).card := by
       simpa using Fintype.card_coe (permsOfFinset f.domᶜ)
-    _ = (f.domᶜ.card)! := card_perms_of_finset f.domᶜ
-    _ = (N - r)! := by
+    _ = Nat.factorial (f.domᶜ.card) := card_perms_of_finset f.domᶜ
+    _ = Nat.factorial (N - r) := by
       rw [Finset.card_compl, f.card_dom]
       simp
 
@@ -137,7 +138,7 @@ theorem card_completions (f : PartialPerm N r) :
 theorem completion_fraction (f : PartialPerm N r) :
     (Fintype.card {π : Equiv.Perm (Fin N) // f.Extends π} : ℚ) /
         Fintype.card (Equiv.Perm (Fin N)) =
-      ((N - r)! : ℚ) / (N! : ℚ) := by
+      (Nat.factorial (N - r) : ℚ) / (Nat.factorial N : ℚ) := by
   rw [f.card_completions, Fintype.card_perm]
   simp
 
