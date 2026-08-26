@@ -29,15 +29,17 @@ noncomputable def qSubsetEquivOverlapSigma (S : QSubset N q) :
   left_inv T := rfl
   right_inv X := by
     rcases X with ⟨j, T⟩
-    apply Sigma.ext
+    apply Sigma.subtype_ext
     · exact Fin.ext T.2
-    · apply Subtype.ext
-      rfl
+    · rfl
 
 /-- The cardinality of the union of two `q`-subsets in an overlap class. -/
 theorem card_union_of_subsetOverlap
     (S : QSubset N q) (j : ℕ) (T : SubsetOverlap S j) :
     (S.1 ∪ T.1.1).card = q + (q - j) := by
+  have hjq : j ≤ q := by
+    rw [← T.2, ← S.2]
+    exact Finset.card_le_card Finset.inter_subset_left
   have h := Finset.card_union_add_card_inter S.1 T.1.1
   rw [S.2, T.1.2, T.2] at h
   omega
@@ -60,7 +62,7 @@ theorem sum_collisionKernel_row_grouped
         ((Nat.choose q j.1 : ℚ) *
             Nat.choose (N - q) (q - j.1)) /
           (N.descFactorial (q + (q - j.1)) : ℚ) := by
-  rw [Equiv.sum_comp (qSubsetEquivOverlapSigma S)]
+  rw [← Equiv.sum_comp (qSubsetEquivOverlapSigma S).symm]
   rw [Fintype.sum_sigma]
   apply Fintype.sum_congr
   intro j
