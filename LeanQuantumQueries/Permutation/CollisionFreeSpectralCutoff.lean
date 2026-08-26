@@ -20,10 +20,13 @@ noncomputable def collisionFreeBeta (N q : ℕ) : ℝ :=
   (Nat.factorial q : ℝ) * (overlapFactor q : ℝ) /
     (N.descFactorial q : ℝ) ^ 2
 
+/-- The real form of the elementary overlap-factor upper bound. -/
+noncomputable def overlapFactorUpper (q : ℕ) : ℝ :=
+  (((2 : ℚ) * 3 ^ q / 2 ^ q : ℚ) : ℝ)
+
 /-- An explicit upper bound on the collision-free purity. -/
 noncomputable def collisionFreeBetaUpper (N q : ℕ) : ℝ :=
-  (Nat.factorial q : ℝ) *
-      (2 * (3 : ℝ) ^ q / (2 : ℝ) ^ q) /
+  (Nat.factorial q : ℝ) * overlapFactorUpper q /
     (N.descFactorial q : ℝ) ^ 2
 
 /-- The exact rational purity calculation agrees with `collisionFreeBeta`. -/
@@ -51,8 +54,8 @@ theorem collisionFreeBeta_le_upper
     collisionFreeBeta N q ≤ collisionFreeBetaUpper N q := by
   have hqN : q ≤ N := by omega
   have hoverlap :
-      (overlapFactor q : ℝ) ≤
-        2 * (3 : ℝ) ^ q / (2 : ℝ) ^ q := by
+      (overlapFactor q : ℝ) ≤ overlapFactorUpper q := by
+    unfold overlapFactorUpper
     exact_mod_cast overlapFactor_le q
   have hdesc : (0 : ℝ) < (N.descFactorial q : ℝ) := by
     exact_mod_cast (Nat.descFactorial_pos.mpr hqN)
@@ -90,7 +93,7 @@ theorem flat_sector_of_purity
     (htrace : ∑ i, lam i = 1)
     (hpurity : ∑ i, (lam i) ^ 2 ≤ beta)
     (hbeta : 0 < beta) (hA : 0 < A) :
-    1 - 1 / A ≤ ∑ i in flatIndices lam beta A, lam i ∧
+    1 - 1 / A ≤ ∑ i ∈ flatIndices lam beta A, lam i ∧
       ∀ i ∈ flatIndices lam beta A, lam i ≤ A * beta := by
   classical
   have hhigh :
@@ -98,10 +101,10 @@ theorem flat_sector_of_purity
     spectral_trimming lam beta A hlam hpurity hbeta hA
   have hsplit :
       (∑ i with lam i > A * beta, lam i) +
-          (∑ i in flatIndices lam beta A, lam i) = 1 := by
+          (∑ i ∈ flatIndices lam beta A, lam i) = 1 := by
     calc
       (∑ i with lam i > A * beta, lam i) +
-          (∑ i in flatIndices lam beta A, lam i) =
+          (∑ i ∈ flatIndices lam beta A, lam i) =
         ∑ i, lam i := by
           simpa [flatIndices, not_lt] using
             (Finset.sum_filter_add_sum_filter_not
@@ -124,7 +127,7 @@ theorem collisionFree_flat_sector
     (hpurity : ∑ i, (lam i) ^ 2 = collisionFreeBeta N q)
     (h2qN : 2 * q ≤ N) (hA : 0 < A) :
     1 - 1 / A ≤
-        ∑ i in flatIndices lam (collisionFreeBeta N q) A, lam i ∧
+        ∑ i ∈ flatIndices lam (collisionFreeBeta N q) A, lam i ∧
       ∀ i ∈ flatIndices lam (collisionFreeBeta N q) A,
         lam i ≤ A * collisionFreeBeta N q := by
   apply flat_sector_of_purity
@@ -145,7 +148,7 @@ theorem collisionFree_flat_sector_explicit
     (hpurity : ∑ i, (lam i) ^ 2 = collisionFreeBeta N q)
     (h2qN : 2 * q ≤ N) (hA : 0 < A) :
     1 - 1 / A ≤
-        ∑ i in flatIndices lam (collisionFreeBetaUpper N q) A, lam i ∧
+        ∑ i ∈ flatIndices lam (collisionFreeBetaUpper N q) A, lam i ∧
       ∀ i ∈ flatIndices lam (collisionFreeBetaUpper N q) A,
         lam i ≤ A * collisionFreeBetaUpper N q := by
   apply flat_sector_of_purity
