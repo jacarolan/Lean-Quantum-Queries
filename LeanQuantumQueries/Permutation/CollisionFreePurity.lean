@@ -60,7 +60,11 @@ noncomputable def subsetOverlapEquivCode
     SubsetOverlap S j ≃ SubsetOverlapCode S j where
   toFun T :=
     ⟨⟨S.1 ∩ T.1.1, Finset.inter_subset_left, T.2⟩,
-      ⟨T.1.1 \ S.1, Finset.sdiff_subset_compl,
+      ⟨T.1.1 \ S.1,
+        by
+          intro x hx
+          rw [Finset.mem_compl]
+          exact (Finset.mem_sdiff.mp hx).2,
         by
           rw [Finset.card_sdiff, T.1.2]
           simpa [Finset.inter_comm] using
@@ -69,7 +73,7 @@ noncomputable def subsetOverlapEquivCode
     let A := C.1.1
     let B := C.2.1
     have hjq : j ≤ q := by
-      rw [← S.2]
+      rw [← S.2, ← C.1.2.2]
       exact Finset.card_le_card C.1.2.1
     have hdisj : Disjoint A B := by
       rw [Finset.disjoint_left]
