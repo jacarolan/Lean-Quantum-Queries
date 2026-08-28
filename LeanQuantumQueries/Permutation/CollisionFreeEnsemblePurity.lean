@@ -122,11 +122,14 @@ theorem collisionFreeEnsemblePurity_eq
                 Nat.factorial N := by
             apply Fintype.sum_congr
             intro S
-            exact Finset.sum_div.symm
+            symm
+            exact Finset.sum_div
       _ = (∑ S : QSubset N q,
             ∑ T : QSubset N q,
               (Nat.factorial (N - (S.1 ∪ T.1).card) : ℝ)) /
-            Nat.factorial N := Finset.sum_div.symm
+            Nat.factorial N := by
+              symm
+              exact Finset.sum_div
   rw [collisionFreeEnsemblePurity, rawAgreementPurity_eq]
   rw [collisionFreePurity]
   push_cast
