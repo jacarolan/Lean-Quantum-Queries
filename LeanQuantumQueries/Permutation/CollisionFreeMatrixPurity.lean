@@ -96,7 +96,7 @@ theorem trace_collisionFreeMomentMatrix_sq_eq_ensemble
     trace_permutationCogram_sq]
   unfold momentNormalizer collisionFreeEnsemblePurity
   field_simp [hfac, hchoose]
-  ring
+  ring_nf
 
 /-- Exact Hilbert--Schmidt purity of the actual moment matrix. -/
 theorem trace_collisionFreeMomentMatrix_sq_eq_beta
