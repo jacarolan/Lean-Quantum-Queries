@@ -102,6 +102,31 @@ theorem collisionFreeEnsemblePurity_eq
   have hfac : (Nat.factorial N : ℝ) ≠ 0 := by positivity
   have hchoose : (Nat.choose N q : ℝ) ≠ 0 := by
     exact_mod_cast Nat.choose_ne_zero hqN
+  have hsum_div :
+      (∑ S : QSubset N q,
+        ∑ T : QSubset N q,
+          (Nat.factorial (N - (S.1 ∪ T.1).card) : ℝ) /
+            Nat.factorial N) =
+        (∑ S : QSubset N q,
+          ∑ T : QSubset N q,
+            (Nat.factorial (N - (S.1 ∪ T.1).card) : ℝ)) /
+          Nat.factorial N := by
+    calc
+      (∑ S : QSubset N q,
+        ∑ T : QSubset N q,
+          (Nat.factorial (N - (S.1 ∪ T.1).card) : ℝ) /
+            Nat.factorial N) =
+          ∑ S : QSubset N q,
+            (∑ T : QSubset N q,
+              (Nat.factorial (N - (S.1 ∪ T.1).card) : ℝ)) /
+                Nat.factorial N := by
+            apply Fintype.sum_congr
+            intro S
+            exact Finset.sum_div
+      _ = (∑ S : QSubset N q,
+            ∑ T : QSubset N q,
+              (Nat.factorial (N - (S.1 ∪ T.1).card) : ℝ)) /
+            Nat.factorial N := Finset.sum_div
   rw [collisionFreeEnsemblePurity, rawAgreementPurity_eq]
   rw [collisionFreePurity]
   push_cast
@@ -116,7 +141,7 @@ theorem collisionFreeEnsemblePurity_eq
           (Nat.factorial (N - (S.1 ∪ T.1).card) : ℝ) /
             Nat.factorial N) /
         (Nat.choose N q : ℝ) ^ 2 := by
-          simp_rw [Finset.sum_div]
+          rw [hsum_div]
           field_simp [hfac, hchoose]
           ring
     _ = (∑ S : QSubset N q,
