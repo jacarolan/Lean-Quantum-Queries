@@ -90,13 +90,28 @@ theorem trace_collisionFreeMomentMatrix_sq_eq_ensemble
   have hfac : (Nat.factorial N : ℝ) ≠ 0 := by positivity
   have hchoose : (Nat.choose N q : ℝ) ≠ 0 := by
     exact_mod_cast Nat.choose_ne_zero hqN
+  have hfac_cancel :
+      (Nat.factorial N : ℝ) ^ 2 * (Nat.factorial N : ℝ)⁻¹ ^ 2 = 1 := by
+    rw [← mul_pow]
+    simp [hfac]
+  have hchoose_cancel :
+      (Nat.choose N q : ℝ) ^ 2 * (Nat.choose N q : ℝ)⁻¹ ^ 2 = 1 := by
+    rw [← mul_pow]
+    simp [hchoose]
   unfold collisionFreeMomentMatrix
   rw [Matrix.smul_mul, Matrix.mul_smul, Matrix.trace_smul, Matrix.trace_smul,
     trace_incidence_gram_sq_eq_cogram_sq,
     trace_permutationCogram_sq]
   unfold momentNormalizer collisionFreeEnsemblePurity
   field_simp [hfac, hchoose]
-  ring_nf
+  calc
+    _ = rawAgreementPurity N q *
+        ((Nat.factorial N : ℝ) ^ 2 * (Nat.factorial N : ℝ)⁻¹ ^ 2) *
+        ((Nat.choose N q : ℝ) ^ 2 * (Nat.choose N q : ℝ)⁻¹ ^ 2) := by
+          ring
+    _ = rawAgreementPurity N q := by
+          rw [hfac_cancel, hchoose_cancel]
+          ring
 
 /-- Exact Hilbert--Schmidt purity of the actual moment matrix. -/
 theorem trace_collisionFreeMomentMatrix_sq_eq_beta
