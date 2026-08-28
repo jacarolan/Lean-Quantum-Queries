@@ -39,14 +39,13 @@ theorem agreementCount_symm
   unfold agreementCount
   apply Fintype.sum_congr
   intro S
-  unfold agreementIndicator AgreesOn AgreesOnFinset
-  by_cases h : ∀ x ∈ S.1, π x = σ x
-  · have hs : ∀ x ∈ S.1, σ x = π x := fun x hx => (h x hx).symm
-    simp [h, hs]
-  · have hs : ¬∀ x ∈ S.1, σ x = π x := by
+  by_cases h : AgreesOn π σ S
+  · have hs : AgreesOn σ π S := fun x hx => (h x hx).symm
+    simp only [agreementIndicator, if_pos h, if_pos hs]
+  · have hs : ¬ AgreesOn σ π S := by
       intro hs
       exact h (fun x hx => (hs x hx).symm)
-    simp [h, hs]
+    simp only [agreementIndicator, if_neg h, if_neg hs]
 
 /-- Cyclicity of trace identifies the squares of the two incidence Gram
 matrices. -/
@@ -92,7 +91,7 @@ theorem trace_collisionFreeMomentMatrix_sq_eq_ensemble
   have hchoose : (Nat.choose N q : ℝ) ≠ 0 := by
     exact_mod_cast Nat.choose_ne_zero hqN
   unfold collisionFreeMomentMatrix
-  rw [Matrix.smul_mul, Matrix.mul_smul, Matrix.trace_smul,
+  rw [Matrix.smul_mul, Matrix.mul_smul, Matrix.trace_smul, Matrix.trace_smul,
     trace_incidence_gram_sq_eq_cogram_sq,
     trace_permutationCogram_sq]
   unfold momentNormalizer collisionFreeEnsemblePurity
