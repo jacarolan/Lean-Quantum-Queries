@@ -63,7 +63,7 @@ noncomputable def commonExtendedEquivAgreement
     exact partialOfSubset_dom π f.1 f.2.1
   right_inv S := by
     apply Subtype.ext
-    exact dom_partialOfSubset π S.1
+    simpa using dom_partialOfSubset π S.1
 
 /-- Common size-`q` partial restrictions and agreement `q`-subsets have the
 same cardinality. -/
