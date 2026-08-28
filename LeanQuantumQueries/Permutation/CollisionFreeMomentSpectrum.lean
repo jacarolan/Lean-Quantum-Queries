@@ -43,7 +43,8 @@ theorem sum_sq_collisionFreeMomentEigenvalues
     ∑ i, (collisionFreeMomentEigenvalues N q i) ^ 2 =
       collisionFreeBeta N q := by
   unfold collisionFreeMomentEigenvalues
-  rw [(collisionFreeMomentMatrix_posSemidef N q).isHermitian.sum_sq_eigenvalues_eq_trace_sq]
+  rw [Matrix.IsHermitian.sum_sq_eigenvalues_eq_trace_sq
+    (collisionFreeMomentMatrix_posSemidef N q).isHermitian]
   exact trace_collisionFreeMomentMatrix_sq_eq_beta h2qN
 
 /-- Final representation-free flatness theorem for the actual moment matrix.
