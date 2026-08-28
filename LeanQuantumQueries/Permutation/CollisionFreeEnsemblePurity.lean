@@ -51,10 +51,10 @@ theorem rawAgreementPurity_eq :
               agreementIndicator π σ S * agreementIndicator π σ T := by
         apply Fintype.sum_congr
         intro π
-        rw [Fintype.sum_comm]
+        rw [Finset.sum_comm]
         apply Fintype.sum_congr
         intro S
-        rw [Fintype.sum_comm]
+        rw [Finset.sum_comm]
     _ = ∑ π : Equiv.Perm (Fin N),
         ∑ S : QSubset N q,
           ∑ T : QSubset N q,
@@ -90,7 +90,8 @@ theorem factorial_ratio_eq_collisionKernel_real
   have hq := factorial_ratio_eq_inv_descFactorial
     (N := N) (u := (S.1 ∪ T.1).card) hu
   unfold collisionKernel
-  exact_mod_cast hq
+  have hq_real := congrArg (Rat.castHom ℝ) hq
+  simpa using hq_real
 
 /-- The actual ensemble purity is exactly the previously evaluated
 collision-free purity scalar. -/
@@ -115,6 +116,7 @@ theorem collisionFreeEnsemblePurity_eq
           (Nat.factorial (N - (S.1 ∪ T.1).card) : ℝ) /
             Nat.factorial N) /
         (Nat.choose N q : ℝ) ^ 2 := by
+          simp_rw [Finset.sum_div]
           field_simp [hfac, hchoose]
           ring
     _ = (∑ S : QSubset N q,
