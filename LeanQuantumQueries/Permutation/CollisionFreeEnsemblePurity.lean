@@ -122,11 +122,11 @@ theorem collisionFreeEnsemblePurity_eq
                 Nat.factorial N := by
             apply Fintype.sum_congr
             intro S
-            exact Finset.sum_div
+            exact Finset.sum_div.symm
       _ = (∑ S : QSubset N q,
             ∑ T : QSubset N q,
               (Nat.factorial (N - (S.1 ∪ T.1).card) : ℝ)) /
-            Nat.factorial N := Finset.sum_div
+            Nat.factorial N := Finset.sum_div.symm
   rw [collisionFreeEnsemblePurity, rawAgreementPurity_eq]
   rw [collisionFreePurity]
   push_cast
@@ -143,7 +143,6 @@ theorem collisionFreeEnsemblePurity_eq
         (Nat.choose N q : ℝ) ^ 2 := by
           rw [hsum_div]
           field_simp [hfac, hchoose]
-          ring
     _ = (∑ S : QSubset N q,
         ∑ T : QSubset N q, (collisionKernel S T : ℝ)) /
           (Nat.choose N q : ℝ) ^ 2 := by
