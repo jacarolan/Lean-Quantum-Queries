@@ -108,8 +108,8 @@ theorem rawOccupiedEnergy_synth_le_decomposition {u : Fin B}
         _ = 2 * (S.totalMean c.val) ^ 2 * S.rawOccupancyCount u x +
             2 * (d : ℝ) * ∑ j,
               S.rawOccupancyCount u x * (S.centeredLift c j x) ^ 2 := by
-          rw [Finset.mul_sum]
-          ring_nf
+          rw [← Finset.mul_sum]
+          ring
     _ = 2 * (S.totalMean c.val) ^ 2 * S.rawAvg (S.rawOccupancyCount u) +
         2 * (d : ℝ) * ∑ j, S.rawCountCenteredSq c j := by
       rw [show (fun x =>
