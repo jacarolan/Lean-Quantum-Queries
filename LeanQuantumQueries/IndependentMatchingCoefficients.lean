@@ -129,7 +129,8 @@ theorem OutsideCoeff.mean_sq_le_eight_variance {u : Fin B}
     8 * ((∑ a, (S.centered i (c.val i) a) ^ 2) /
       ((S.orbit i).card : ℝ))
   rw [← mul_div_assoc]
-  exact (le_div_iff₀ hn).2 hscaled
+  apply (le_div_iff₀ hn).2
+  simpa [mul_comm] using hscaled
 
 end SectorData
 end IndependentMatchingBlockOccupancy
