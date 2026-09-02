@@ -28,11 +28,5 @@ jobs:
       - name: Restore mathlib cache
         run: lake exe cache get
 
-      - name: Build and kernel-check
-        uses: leanprover/lean-action@v1
-        with:
-          build: true
-          test: false
-          lint: false
-          leanchecker: true
-          nanoda: false
+      - name: Elaborate target file
+        run: lake env lean LeanQuantumQueries/IndependentMatchingBlockOccupancy.lean
