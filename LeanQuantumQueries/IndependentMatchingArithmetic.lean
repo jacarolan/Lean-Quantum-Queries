@@ -26,7 +26,9 @@ theorem weighted_complete_mean_bound
   classical
   by_cases hC : C = ∅
   · subst C
-    simp [ht, hV]
+    simp only [Finset.sum_empty, zero_div, mul_zero]
+    have ht0 : 0 ≤ t := le_trans (by norm_num) ht
+    positivity
   have hCne : C.Nonempty := Finset.nonempty_iff_ne_empty.2 hC
   have hrNat : 1 ≤ C.card := Finset.one_le_card.2 hCne
   have hr : (1 : ℝ) ≤ (C.card : ℝ) := by exact_mod_cast hrNat
@@ -40,8 +42,12 @@ theorem weighted_complete_mean_bound
       apply Finset.sum_le_sum
       intro i hi
       exact hlower i hi
-    simpa [Finset.sum_const, nsmul_eq_mul, Finset.mul_sum,
-      mul_comm, mul_left_comm, mul_assoc] using hs
+    calc
+      q * (C.card : ℝ) = ∑ i ∈ C, q := by
+        simp [Finset.sum_const, nsmul_eq_mul, mul_comm]
+      _ ≤ ∑ i ∈ C, 8 * m i := hs
+      _ = 8 * ∑ i ∈ C, m i := by
+        rw [Finset.mul_sum]
   have hterm : ∀ i ∈ C,
       q * ((μ i) ^ 2 / m i) ≤ 8 * (μ i) ^ 2 := by
     intro i hi
@@ -73,7 +79,7 @@ theorem weighted_complete_mean_bound
     have hsquare :
         ((C.card : ℝ) * m i) ^ 2 ≤
           (8 * ∑ j ∈ C, m j) ^ 2 := by
-      exact sq_le_sq₀ hrmi0 hrmi h8M0
+      exact (sq_le_sq₀ hrmi0 h8M0).2 hrmi
     have hlam2 : 0 ≤ lam ^ 2 := sq_nonneg _
     have hsquareLam := mul_le_mul_of_nonneg_right hsquare hlam2
     have htransport :
@@ -106,7 +112,8 @@ theorem weighted_complete_mean_bound
         exact Finset.sum_le_sum fun i hi => hpoint i hi
       _ = (C.card : ℝ) *
           (258 * ((C.card : ℝ) ^ 2) * a ^ 2 + 256 * b ^ 2) := by
-        simp [Finset.sum_const, nsmul_eq_mul]
+        simp only [Finset.sum_const, nsmul_eq_mul]
+        ring
   have hscaled :
       ((C.card : ℝ) ^ 2) *
           (q * ∑ i ∈ C, (μ i) ^ 2 / m i) ≤
@@ -117,21 +124,62 @@ theorem weighted_complete_mean_bound
     nlinarith
   have ha2 : 0 ≤ a ^ 2 := sq_nonneg _
   have hb2 : 0 ≤ b ^ 2 := sq_nonneg _
-  have hsumNonneg : 0 ≤ ∑ i ∈ C, (μ i) ^ 2 / m i := by
-    apply Finset.sum_nonneg
-    intro i hi
-    exact div_nonneg (sq_nonneg _) (hmpos i hi).le
-  have hleft0 : 0 ≤ q * ∑ i ∈ C, (μ i) ^ 2 / m i :=
-    mul_nonneg hq hsumNonneg
   have ht0 : 0 ≤ t := le_trans (by norm_num) ht
-  have htarget0 : 0 ≤ 20000 * t * (a ^ 2 + V) := by positivity
-  have hr2one : 1 ≤ (C.card : ℝ) ^ 2 := by nlinarith
-  have hrle : (C.card : ℝ) ≤ t := hcard
+  have hr_le_sq : (C.card : ℝ) ≤ (C.card : ℝ) ^ 2 := by
+    nlinarith
+  have hfirst :
+      2064 * (C.card : ℝ) ^ 3 * a ^ 2 ≤
+        2064 * (C.card : ℝ) ^ 2 * t * a ^ 2 := by
+    have hnon : 0 ≤ 2064 * (C.card : ℝ) ^ 2 * a ^ 2 := by positivity
+    calc
+      2064 * (C.card : ℝ) ^ 3 * a ^ 2 =
+          (2064 * (C.card : ℝ) ^ 2 * a ^ 2) * (C.card : ℝ) := by ring
+      _ ≤ (2064 * (C.card : ℝ) ^ 2 * a ^ 2) * t :=
+        mul_le_mul_of_nonneg_left hcard hnon
+      _ = 2064 * (C.card : ℝ) ^ 2 * t * a ^ 2 := by ring
+  have hsecondBase :
+      2048 * (C.card : ℝ) * b ^ 2 ≤
+        2048 * (C.card : ℝ) * (8 * t * V) := by
+    exact mul_le_mul_of_nonneg_left hb (by positivity)
+  have hsecondGrow :
+      2048 * (C.card : ℝ) * (8 * t * V) ≤
+        16384 * (C.card : ℝ) ^ 2 * t * V := by
+    have hnon : 0 ≤ 16384 * t * V := by positivity
+    calc
+      2048 * (C.card : ℝ) * (8 * t * V) =
+          (16384 * t * V) * (C.card : ℝ) := by ring
+      _ ≤ (16384 * t * V) * (C.card : ℝ) ^ 2 :=
+        mul_le_mul_of_nonneg_left hr_le_sq hnon
+      _ = 16384 * (C.card : ℝ) ^ 2 * t * V := by ring
+  have hsecond :
+      2048 * (C.card : ℝ) * b ^ 2 ≤
+        16384 * (C.card : ℝ) ^ 2 * t * V :=
+    le_trans hsecondBase hsecondGrow
+  have haCoeff :
+      2064 * (C.card : ℝ) ^ 2 * t * a ^ 2 ≤
+        20000 * (C.card : ℝ) ^ 2 * t * a ^ 2 := by
+    have hnon : 0 ≤ (C.card : ℝ) ^ 2 * t * a ^ 2 := by positivity
+    nlinarith
+  have hVCoeff :
+      16384 * (C.card : ℝ) ^ 2 * t * V ≤
+        20000 * (C.card : ℝ) ^ 2 * t * V := by
+    have hnon : 0 ≤ (C.card : ℝ) ^ 2 * t * V := by positivity
+    nlinarith
   have hmainScaled :
       2064 * (C.card : ℝ) ^ 3 * a ^ 2 +
           2048 * (C.card : ℝ) * b ^ 2 ≤
         ((C.card : ℝ) ^ 2) * (20000 * t * (a ^ 2 + V)) := by
-    nlinarith
-  nlinarith
+    calc
+      2064 * (C.card : ℝ) ^ 3 * a ^ 2 +
+          2048 * (C.card : ℝ) * b ^ 2 ≤
+        2064 * (C.card : ℝ) ^ 2 * t * a ^ 2 +
+          16384 * (C.card : ℝ) ^ 2 * t * V := add_le_add hfirst hsecond
+      _ ≤ 20000 * (C.card : ℝ) ^ 2 * t * a ^ 2 +
+          20000 * (C.card : ℝ) ^ 2 * t * V := add_le_add haCoeff hVCoeff
+      _ = ((C.card : ℝ) ^ 2) * (20000 * t * (a ^ 2 + V)) := by ring
+  have hmul := le_trans hscaled hmainScaled
+  have hrpos : 0 < (C.card : ℝ) := lt_of_lt_of_le zero_lt_one hr
+  have hr2pos : 0 < (C.card : ℝ) ^ 2 := by positivity
+  exact (mul_le_mul_left hr2pos).mp hmul
 
 end IndependentMatchingBlockOccupancy
