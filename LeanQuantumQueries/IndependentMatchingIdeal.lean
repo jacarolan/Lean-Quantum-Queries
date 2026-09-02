@@ -272,7 +272,7 @@ theorem rawNormSq_synth
     intro i _
     rw [S.rawInner_sum_right]
   rw [hConstSum, hSumConst, hSumSum, hdouble, S.rawInner_const_const]
-  ring
+  simpa only [rawNormSq]
 
 end SectorData
 end IndependentMatchingBlockOccupancy
