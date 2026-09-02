@@ -1,0 +1,108 @@
+import Mathlib
+
+open scoped BigOperators
+
+namespace IndependentMatchingBlockOccupancy
+
+/-- Numerical estimate for complete coordinate families.  It is a pure
+consequence of the common-direction equations and the orbit lower bound. -/
+theorem weighted_complete_defect_bound
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (C : Finset ι) (m : ι → ℝ)
+    (q t a b lam V : ℝ)
+    (ht : 1 ≤ t) (hq : 0 ≤ q) (hV : 0 ≤ V)
+    (hcard : (C.card : ℝ) ≤ t)
+    (hmpos : ∀ i ∈ C, 0 < m i)
+    (hlower : ∀ i ∈ C, q ≤ 8 * m i)
+    (heq : (∑ i ∈ C, m i) * lam = ((C.card : ℝ) - 1) * a + b)
+    (hb : b ^ 2 ≤ 8 * t * V) :
+    q * ∑ i ∈ C, ((m i * lam) ^ 2 / m i) ≤
+      200 * t * (a ^ 2 + V) := by
+  classical
+  by_cases hC : C = ∅
+  · subst C
+    simp [ht, hV]
+  let r : ℝ := C.card
+  let M : ℝ := ∑ i ∈ C, m i
+  have hCne : C.Nonempty := Finset.nonempty_iff_ne_empty.2 hC
+  have hr : 1 ≤ r := by
+    unfold r
+    exact_mod_cast Finset.one_le_card.2 hCne
+  have hrpos : 0 < r := lt_of_lt_of_le (by norm_num) hr
+  have hr0 : 0 ≤ r := hrpos.le
+  have hMpos : 0 < M := by
+    unfold M
+    exact Finset.sum_pos (fun i hi => (hmpos i hi).le) hCne
+  have hqr : q * r ≤ 8 * M := by
+    unfold r M
+    have hs : ∑ i ∈ C, q ≤ ∑ i ∈ C, 8 * m i := by
+      exact Finset.sum_le_sum fun i hi => hlower i hi
+    simpa [Finset.sum_const, nsmul_eq_mul, Finset.mul_sum,
+      mul_comm, mul_left_comm, mul_assoc] using hs
+  have hratio : q / M ≤ 8 / r := by
+    exact (div_le_div_iff₀ hMpos hrpos).2 hqr
+  have hratio0 : 0 ≤ q / M := div_nonneg hq hMpos.le
+  have hsumCancel :
+      (∑ i ∈ C, ((m i * lam) ^ 2 / m i)) = M * lam ^ 2 := by
+    unfold M
+    calc
+      (∑ i ∈ C, ((m i * lam) ^ 2 / m i)) =
+          ∑ i ∈ C, m i * lam ^ 2 := by
+        apply Finset.sum_congr rfl
+        intro i hi
+        have hmi : m i ≠ 0 := ne_of_gt (hmpos i hi)
+        field_simp [hmi]
+        ring
+      _ = (∑ i ∈ C, m i) * lam ^ 2 := by
+        rw [Finset.sum_mul]
+  rw [hsumCancel]
+  have hrewrite : q * (M * lam ^ 2) =
+      (q / M) * (M * lam) ^ 2 := by
+    field_simp [ne_of_gt hMpos]
+    ring
+  rw [hrewrite]
+  have heq' : M * lam = (r - 1) * a + b := by
+    simpa [M, r] using heq
+  rw [heq']
+  have hsq : ((r - 1) * a + b) ^ 2 ≤
+      2 * (r - 1) ^ 2 * a ^ 2 + 2 * b ^ 2 := by
+    nlinarith [sq_nonneg ((r - 1) * a - b)]
+  have hfirst : (8 / r) *
+      (2 * (r - 1) ^ 2 * a ^ 2) ≤ 16 * r * a ^ 2 := by
+    have hrminus : (r - 1) ^ 2 ≤ r ^ 2 := by
+      nlinarith
+    have ha : 0 ≤ a ^ 2 := sq_nonneg _
+    apply (div_le_iff₀ hrpos).2
+    nlinarith
+  have hsecond : (8 / r) * (2 * b ^ 2) ≤ 16 * b ^ 2 := by
+    have hb0 : 0 ≤ b ^ 2 := sq_nonneg _
+    apply (div_le_iff₀ hrpos).2
+    nlinarith
+  have hratioSq :
+      (q / M) * (((r - 1) * a + b) ^ 2) ≤
+        (8 / r) * (((r - 1) * a + b) ^ 2) :=
+    mul_le_mul_of_nonneg_right hratio (sq_nonneg _)
+  have hsplit :
+      (8 / r) * (((r - 1) * a + b) ^ 2) ≤
+        (8 / r) * (2 * (r - 1) ^ 2 * a ^ 2 + 2 * b ^ 2) :=
+    mul_le_mul_of_nonneg_left hsq (div_nonneg (by norm_num) hr0)
+  have hbasic :
+      (q / M) * (((r - 1) * a + b) ^ 2) ≤
+        16 * r * a ^ 2 + 16 * b ^ 2 := by
+    calc
+      _ ≤ (8 / r) * (((r - 1) * a + b) ^ 2) := hratioSq
+      _ ≤ (8 / r) *
+          (2 * (r - 1) ^ 2 * a ^ 2 + 2 * b ^ 2) := hsplit
+      _ = (8 / r) * (2 * (r - 1) ^ 2 * a ^ 2) +
+          (8 / r) * (2 * b ^ 2) := by ring
+      _ ≤ 16 * r * a ^ 2 + 16 * b ^ 2 := add_le_add hfirst hsecond
+  have hrle : r ≤ t := by simpa [r] using hcard
+  have ht0 : 0 ≤ t := le_trans (by norm_num) ht
+  have ha0 : 0 ≤ a ^ 2 := sq_nonneg _
+  have hb0 : 0 ≤ b ^ 2 := sq_nonneg _
+  have hfinal : 16 * r * a ^ 2 + 16 * b ^ 2 ≤
+      200 * t * (a ^ 2 + V) := by
+    nlinarith
+  exact le_trans hbasic hfinal
+
+end IndependentMatchingBlockOccupancy
