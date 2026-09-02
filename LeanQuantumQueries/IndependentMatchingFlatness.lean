@@ -35,15 +35,18 @@ def transport {α β : Type*} (σ : Equiv.Perm α) (τ : Equiv.Perm β) :
 /-- Any two injective partial endpoint assignments of the same size are
 contained in exactly the same number of total matchings. -/
 noncomputable def extensionEquiv {k : ℕ} {α β : Type*}
-    [Fintype (Fin k)]
     (D₁ D₂ : PartialMatching k α β) :
     {e : Matching α β // Extends e D₁} ≃
       {e : Matching α β // Extends e D₂} := by
   classical
-  obtain ⟨σ, hσ⟩ := Equiv.Perm.exists_extending_pair
+  let exσ := Equiv.Perm.exists_extending_pair
     D₁.left D₂.left D₁.left.injective D₂.left.injective
-  obtain ⟨τ, hτ⟩ := Equiv.Perm.exists_extending_pair
+  let σ := Classical.choose exσ
+  have hσ := Classical.choose_spec exσ
+  let exτ := Equiv.Perm.exists_extending_pair
     D₁.right D₂.right D₁.right.injective D₂.right.injective
+  let τ := Classical.choose exτ
+  have hτ := Classical.choose_spec exτ
   let E := transport σ τ
   exact
     { toFun := fun e => ⟨E e.1, by
@@ -65,11 +68,10 @@ noncomputable def extensionEquiv {k : ℕ} {α β : Type*}
 
 /-- Exact endpoint-flatness statement for one color. -/
 theorem extension_card_eq {k : ℕ} {α β : Type*}
-    [Fintype α] [Fintype β]
+    [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β]
     (D₁ D₂ : PartialMatching k α β) :
     Fintype.card {e : Matching α β // Extends e D₁} =
       Fintype.card {e : Matching α β // Extends e D₂} := by
-  classical
   exact Fintype.card_congr (extensionEquiv D₁ D₂)
 
 /-- Partial databases for three independently sampled colors. -/
@@ -88,10 +90,10 @@ prescribed edges of each color matters, not their endpoint identities. -/
 theorem threeColor_extension_card_eq {k : Fin 3 → ℕ}
     {L R : Fin 3 → Type*}
     [∀ c, Fintype (L c)] [∀ c, Fintype (R c)]
+    [∀ c, DecidableEq (L c)] [∀ c, DecidableEq (R c)]
     (D₁ D₂ : ThreeColorPartial k L R) :
     Fintype.card (ThreeColorExtensions D₁) =
       Fintype.card (ThreeColorExtensions D₂) := by
-  classical
   apply Fintype.card_congr
   exact Equiv.piCongrRight fun c => extensionEquiv (D₁.edge c) (D₂.edge c)
 
