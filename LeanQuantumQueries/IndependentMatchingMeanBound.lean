@@ -85,13 +85,13 @@ theorem rawNormSq_synth_eq (S : SectorData d B) {u : Fin B}
 theorem card_completeAtU_le (S : SectorData d B) (u : Fin B) :
     (S.completeAtU u).card ≤ d := by
   classical
-  exact (S.completeAtU u).card_le_univ
+  simpa [Fintype.card_fin] using (S.completeAtU u).card_le_univ
 
 /-- Number of incomplete coordinates is at most the number of coordinates. -/
 theorem card_incomplete_le (S : SectorData d B) :
     S.incompleteIndices.card ≤ d := by
   classical
-  exact S.incompleteIndices.card_le_univ
+  simpa [Fintype.card_fin] using S.incompleteIndices.card_le_univ
 
 /-- The mean of every incomplete coefficient row is controlled by its
 variance. -/
@@ -297,8 +297,7 @@ theorem complete_weighted_mean_bound (S : SectorData d B)
           ((C.card : ℝ) - 1) * a + b := by
       have ha : a = ∑ i, S.coefficientMean c i := by
         rfl
-      rw [ha, hpartition, hsumC]
-      ring
+      nlinarith [ha, hpartition, hsumC]
     have hb : b ^ 2 ≤ 8 * (t : ℝ) * V := by
       exact S.incomplete_mean_sum_sq_le c H hgapU
     have hcardNat : C.card ≤ t :=
