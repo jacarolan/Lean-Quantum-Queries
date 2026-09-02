@@ -40,7 +40,7 @@ jobs:
         run: lake exe cache get
 
       - name: Build target
-        run: lake build LeanQuantumQueries.IndependentMatchingSpaces
+        run: lake build LeanQuantumQueries.IndependentMatchingCore
 
       - name: Save Lake directory
         if: always() && steps.lake-cache.outputs.cache-hit != 'true'
