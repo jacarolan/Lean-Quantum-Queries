@@ -7,6 +7,9 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 concurrency:
   group: lean-${{ github.ref }}
   cancel-in-progress: true
@@ -16,6 +19,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Normalize finite-sum arithmetic
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('LeanQuantumQueries/IndependentMatchingRawOccupancyBound.lean')
+          text = path.read_text()
+          old = """          rw [Finset.mul_sum]
+          ring
+"""
+          new = """          rw [Finset.mul_sum]
+          ring_nf
+"""
+          count = text.count(old)
+          if count != 1:
+              raise SystemExit(f'expected one target block, found {count}')
+          path.write_text(text.replace(old, new, 1))
+          PY
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add LeanQuantumQueries/IndependentMatchingRawOccupancyBound.lean
+          git commit -m "Normalize finite-sum arithmetic"
+          git push
 
       - name: Reject placeholders and user axioms
         run: |
