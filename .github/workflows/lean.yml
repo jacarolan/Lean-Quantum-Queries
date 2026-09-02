@@ -25,6 +25,12 @@ jobs:
           curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
 
+      - name: Cache Lake directory
+        uses: actions/cache@v4
+        with:
+          path: .lake
+          key: lean-4.30.0-${{ runner.os }}-${{ hashFiles('lake-manifest.json') }}
+
       - name: Restore mathlib cache
         run: lake exe cache get
 
