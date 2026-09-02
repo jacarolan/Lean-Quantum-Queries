@@ -90,9 +90,9 @@ theorem OutsideCoeff.rawInner_synth_rawAtU {u : Fin B}
         ((S.orbit i).card : ℝ) := by
   classical
   have hsynth : S.synth c.val = ∑ j, S.lift j (c.val j) := by
+    unfold SectorData.synth SectorData.lift
     funext x
-    change (∑ j, c.val j (x j)) = ∑ j, c.val j (x j)
-    rfl
+    simp only [Finset.sum_apply]
   rw [hsynth, S.rawInner_sum_left]
   rw [← Finset.sum_erase_add Finset.univ
     (fun j => S.rawInner (S.lift j (c.val j)) (S.rawAtU u i))
@@ -113,7 +113,11 @@ theorem OutsideCoeff.rawInner_synth_rawAtU {u : Fin B}
   unfold totalMean
   have herase := Finset.sum_erase_add Finset.univ
     (fun j => S.coordAvg j (c.val j)) (Finset.mem_univ i)
-  linarith
+  have hnum :
+      (∑ j ∈ Finset.univ.erase i, S.coordAvg j (c.val j)) =
+        (∑ j, S.coordAvg j (c.val j)) - S.coordAvg i (c.val i) := by
+    linarith
+  rw [hnum]
 
 /-- The raw difference of two complete `u`-fibers is one of the explicit
 common generators. -/
