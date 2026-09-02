@@ -7,9 +7,6 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 concurrency:
   group: lean-${{ github.ref }}
   cancel-in-progress: true
@@ -19,15 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Correct finite-sum distribution
-        run: |
-          python3 -c "from pathlib import Path; p=Path('LeanQuantumQueries/IndependentMatchingRawOccupancyBound.lean'); s=p.read_text(); old='          rw [Finset.mul_sum]\\n          ring_nf\\n'; new='          rw [← Finset.mul_sum]\\n          ring\\n'; assert s.count(old)==1, s.count(old); p.write_text(s.replace(old,new,1))"
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add LeanQuantumQueries/IndependentMatchingRawOccupancyBound.lean
-          git commit -m "Correct finite-sum distribution"
-          git push
 
       - name: Reject placeholders and user axioms
         run: |
