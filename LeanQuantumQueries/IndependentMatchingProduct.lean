@@ -103,7 +103,7 @@ noncomputable def insertAt₂ (i j : Fin d)
       exact b
     · exact y ⟨k, hki, hkj⟩
 
-@[simp] theorem insertAt₂_left (i j : Fin d) (hji : j ≠ i)
+@[simp] theorem insertAt₂_left (i j : Fin d) (_hji : j ≠ i)
     (a : {a : Fin B // a ∈ S.orbit i})
     (b : {b : Fin B // b ∈ S.orbit j})
     (y : S.Remaining₂ i j) : S.insertAt₂ i j a b y i = a := by
@@ -134,6 +134,7 @@ noncomputable def pairFiberEquiv (i j : Fin d) (hji : j ≠ i)
     intro x
     apply Subtype.ext
     funext k
+    change S.insertAt₂ i j a b (fun l => x.1 l.1) k = x.1 k
     by_cases hki : k = i
     · subst k
       rw [S.insertAt₂_left i j hji a b]
@@ -146,6 +147,7 @@ noncomputable def pairFiberEquiv (i j : Fin d) (hji : j ≠ i)
   right_inv := by
     intro y
     funext k
+    change S.insertAt₂ i j a b y k.1 = y k
     simpa using S.insertAt₂_ne i j k.1 k.2.1 k.2.2 a b y
 
 /-- Cardinality of a two-coordinate fiber. -/
