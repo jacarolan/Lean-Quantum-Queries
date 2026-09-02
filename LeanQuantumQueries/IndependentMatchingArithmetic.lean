@@ -26,7 +26,7 @@ theorem weighted_complete_mean_bound
   classical
   by_cases hC : C = ∅
   · subst C
-    simp only [Finset.sum_empty, zero_div, mul_zero]
+    simp only [Finset.sum_empty, mul_zero]
     have ht0 : 0 ≤ t := le_trans (by norm_num) ht
     positivity
   have hCne : C.Nonempty := Finset.nonempty_iff_ne_empty.2 hC
@@ -113,7 +113,6 @@ theorem weighted_complete_mean_bound
       _ = (C.card : ℝ) *
           (258 * ((C.card : ℝ) ^ 2) * a ^ 2 + 256 * b ^ 2) := by
         simp only [Finset.sum_const, nsmul_eq_mul]
-        ring
   have hscaled :
       ((C.card : ℝ) ^ 2) *
           (q * ∑ i ∈ C, (μ i) ^ 2 / m i) ≤
@@ -180,6 +179,6 @@ theorem weighted_complete_mean_bound
   have hmul := le_trans hscaled hmainScaled
   have hrpos : 0 < (C.card : ℝ) := lt_of_lt_of_le zero_lt_one hr
   have hr2pos : 0 < (C.card : ℝ) ^ 2 := by positivity
-  exact (mul_le_mul_left hr2pos).mp hmul
+  exact le_of_mul_le_mul_left hmul hr2pos
 
 end IndependentMatchingBlockOccupancy
