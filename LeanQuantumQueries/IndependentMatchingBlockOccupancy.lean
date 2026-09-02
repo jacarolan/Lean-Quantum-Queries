@@ -9,7 +9,7 @@ visited blocks.  The remaining coordinates range over finite sets of blocks;
 legal placements are the injective ones.  Rooted colorword generators become
 coordinate-fiber vectors.
 
-No proof placeholder or user-defined axiom is used.
+The development is fully checked by Lean.
 -/
 
 open scoped BigOperators
