@@ -36,12 +36,15 @@ noncomputable def fixedFiberEquiv (i : Fin d)
         funext j
         by_cases h : j = i
         · subst j
-          simp [backward, x.2]
-        · simp [backward, h]
+          change a = x.1 i
+          exact x.2.symm
+        · change x.1 j = x.1 j
+          rfl
       right_inv := by
         intro y
         funext j
-        simp [backward, j.2] }
+        change y j = y j
+        rfl }
 
 /-- Cardinality of a fixed product-coordinate fiber. -/
 theorem card_fixedFiber (i : Fin d)
@@ -108,15 +111,19 @@ noncomputable def pairFiberEquiv (i j : Fin d) (hji : j ≠ i)
         funext k
         by_cases hki : k = i
         · subst k
-          simp [backward, x.2.1]
+          change a = x.1 i
+          exact x.2.1.symm
         · by_cases hkj : k = j
           · subst k
-            simp [backward, hki, x.2.2]
-          · simp [backward, hki, hkj]
+            change b = x.1 j
+            exact x.2.2.symm
+          · change x.1 k = x.1 k
+            rfl
       right_inv := by
         intro y
         funext k
-        simp [backward, k.2.1, k.2.2] }
+        change y k = y k
+        rfl }
 
 /-- Cardinality of a two-coordinate fiber. -/
 theorem card_pairFiber (i j : Fin d) (hji : j ≠ i)
