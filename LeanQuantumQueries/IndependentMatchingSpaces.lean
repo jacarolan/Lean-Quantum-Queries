@@ -60,6 +60,7 @@ theorem lift_eq_sum_fibers (i : Fin d)
     S.lift i g = ∑ a, g a • S.rawFiber i a.1 := by
   classical
   funext x
+  simp only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
   rw [Fintype.sum_eq_single (x i)]
   · simp [lift, rawFiber, block]
   · intro a ha
@@ -68,7 +69,6 @@ theorem lift_eq_sum_fibers (i : Fin d)
       apply ha
       exact Subtype.ext h
     simp [rawFiber, block, hne]
-  · simp
 
 /-- Coefficients in `outsideCoeffSpace` synthesize into the raw outside span. -/
 theorem synth_mem_rawOutside {u : Fin B} {g : S.Coeff}
@@ -94,7 +94,7 @@ theorem synth_mem_rawOutside {u : Fin B} {g : S.Coeff}
 /-- A delta coefficient family producing one prescribed outside cylinder. -/
 noncomputable def deltaCoeff (u : Fin B) (i : Fin d)
     (a : {a : Fin B // a ∈ S.orbit i}) : S.Coeff :=
-  fun j b => if h : j = i then
+  fun j b => if _h : j = i then
     if b.1 = a.1 then 1 else 0
   else 0
 
