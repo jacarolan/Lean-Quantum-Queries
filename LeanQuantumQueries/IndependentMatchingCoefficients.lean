@@ -71,9 +71,9 @@ theorem OutsideCoeff.centered_eq_neg_mean_of_missing {u : Fin B}
     (a : {a : Fin B // a ∈ S.orbit i})
     (ha : a ∈ S.missingValues u i) :
     S.centered i (c.val i) a = -S.coordAvg i (c.val i) := by
-  unfold centered
-  rw [c.eq_zero_of_mem_missing i a ha]
-  ring
+  have hz : c.val i a = 0 :=
+    OutsideCoeff.eq_zero_of_mem_missing (S := S) c i a ha
+  simp [centered, hz]
 
 /-- Exact contribution of the missing values to the coordinate variance. -/
 theorem OutsideCoeff.sum_missing_centered_sq {u : Fin B}
@@ -82,11 +82,16 @@ theorem OutsideCoeff.sum_missing_centered_sq {u : Fin B}
       (S.centered i (c.val i) a) ^ 2) =
       (S.missingValues u i).card * (S.coordAvg i (c.val i)) ^ 2 := by
   classical
-  rw [Finset.sum_eq_card_nsmul]
-  · simp only [nsmul_eq_mul]
-  · intro a ha
-    rw [c.centered_eq_neg_mean_of_missing i a ha]
-    ring
+  calc
+    (∑ a ∈ S.missingValues u i,
+        (S.centered i (c.val i) a) ^ 2) =
+        ∑ _a ∈ S.missingValues u i, (S.coordAvg i (c.val i)) ^ 2 := by
+      apply Finset.sum_congr rfl
+      intro a ha
+      rw [OutsideCoeff.centered_eq_neg_mean_of_missing (S := S) c i a ha]
+      ring
+    _ = (S.missingValues u i).card * (S.coordAvg i (c.val i)) ^ 2 := by
+      simp
 
 /-- The missing-value contribution is at most the full variance sum. -/
 theorem OutsideCoeff.sum_missing_le_sum_all {u : Fin B}
@@ -95,7 +100,7 @@ theorem OutsideCoeff.sum_missing_le_sum_all {u : Fin B}
       (S.centered i (c.val i) a) ^ 2) ≤
       ∑ a, (S.centered i (c.val i) a) ^ 2 := by
   classical
-  apply Finset.sum_le_sum_of_subset (Finset.subset_univ _)
+  apply Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
   intro a _ _
   exact sq_nonneg _
 
@@ -107,25 +112,24 @@ theorem OutsideCoeff.mean_sq_le_eight_variance {u : Fin B}
     (S.coordAvg i (c.val i)) ^ 2 ≤
       8 * S.rawNormSq (S.lift i (S.centered i (c.val i))) := by
   classical
-  have hmiss := c.sum_missing_le_sum_all i
-  rw [c.sum_missing_centered_sq i] at hmiss
+  have hmiss := OutsideCoeff.sum_missing_le_sum_all (S := S) c i
+  rw [OutsideCoeff.sum_missing_centered_sq (S := S) c i] at hmiss
   rw [S.rawNormSq_lift i]
-  unfold coordAvg
   have hn : 0 < ((S.orbit i).card : ℝ) := by
     exact_mod_cast (S.orbit_nonempty i).card_pos
   have hgapR : ((S.orbit i).card : ℝ) ≤
       8 * ((S.missingValues u i).card : ℝ) := by
     exact_mod_cast hgap
-  have hsq : 0 ≤ (S.coordAvg i (c.val i)) ^ 2 := sq_nonneg _
+  have hmean : 0 ≤ (S.coordAvg i (c.val i)) ^ 2 := sq_nonneg _
   have hscaled :
       ((S.orbit i).card : ℝ) * (S.coordAvg i (c.val i)) ^ 2 ≤
         8 * ∑ a, (S.centered i (c.val i) a) ^ 2 := by
     nlinarith
-  rw [show S.coordAvg i (fun a => (S.centered i (c.val i) a) ^ 2) =
-      (∑ a, (S.centered i (c.val i) a) ^ 2) /
-        ((S.orbit i).card : ℝ) by rfl]
-  apply (le_div_iff₀ hn).2
-  nlinarith
+  change (S.coordAvg i (c.val i)) ^ 2 ≤
+    8 * ((∑ a, (S.centered i (c.val i) a) ^ 2) /
+      ((S.orbit i).card : ℝ))
+  rw [← mul_div_assoc]
+  exact (le_div_iff₀ hn).2 hscaled
 
 end SectorData
 end IndependentMatchingBlockOccupancy
