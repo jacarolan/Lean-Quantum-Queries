@@ -68,11 +68,10 @@ noncomputable def extensionEquiv {k : ℕ} {α β : Type*}
 
 /-- Exact endpoint-flatness statement for one color. -/
 theorem extension_card_eq {k : ℕ} {α β : Type*}
-    [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β]
     (D₁ D₂ : PartialMatching k α β) :
-    Fintype.card {e : Matching α β // Extends e D₁} =
-      Fintype.card {e : Matching α β // Extends e D₂} := by
-  exact Fintype.card_congr (extensionEquiv D₁ D₂)
+    Nat.card {e : Matching α β // Extends e D₁} =
+      Nat.card {e : Matching α β // Extends e D₂} := by
+  exact Nat.card_congr (extensionEquiv D₁ D₂)
 
 /-- Partial databases for three independently sampled colors. -/
 structure ThreeColorPartial (k : Fin 3 → ℕ)
@@ -85,17 +84,22 @@ abbrev ThreeColorExtensions {k : Fin 3 → ℕ}
     {L R : Fin 3 → Type*} (D : ThreeColorPartial k L R) :=
   ∀ c, {e : Matching (L c) (R c) // Extends e (D.edge c)}
 
+/-- Relabeling each color independently gives an equivalence between the sets
+of three-color matching completions. -/
+noncomputable def threeColorExtensionEquiv {k : Fin 3 → ℕ}
+    {L R : Fin 3 → Type*}
+    (D₁ D₂ : ThreeColorPartial k L R) :
+    ThreeColorExtensions D₁ ≃ ThreeColorExtensions D₂ :=
+  Equiv.piCongrRight fun c => extensionEquiv (D₁.edge c) (D₂.edge c)
+
 /-- Exact flatness for all three independent colors: only the number of
 prescribed edges of each color matters, not their endpoint identities. -/
 theorem threeColor_extension_card_eq {k : Fin 3 → ℕ}
     {L R : Fin 3 → Type*}
-    [∀ c, Fintype (L c)] [∀ c, Fintype (R c)]
-    [∀ c, DecidableEq (L c)] [∀ c, DecidableEq (R c)]
     (D₁ D₂ : ThreeColorPartial k L R) :
-    Fintype.card (ThreeColorExtensions D₁) =
-      Fintype.card (ThreeColorExtensions D₂) := by
-  apply Fintype.card_congr
-  exact Equiv.piCongrRight fun c => extensionEquiv (D₁.edge c) (D₂.edge c)
+    Nat.card (ThreeColorExtensions D₁) =
+      Nat.card (ThreeColorExtensions D₂) := by
+  exact Nat.card_congr (threeColorExtensionEquiv D₁ D₂)
 
 end MatchingFlatness
 end IndependentMatchingBlockOccupancy
