@@ -68,6 +68,7 @@ theorem lift_eq_sum_fibers (i : Fin d)
       apply ha
       exact Subtype.ext h
     simp [rawFiber, block, hne]
+  · simp
 
 /-- Coefficients in `outsideCoeffSpace` synthesize into the raw outside span. -/
 theorem synth_mem_rawOutside {u : Fin B} {g : S.Coeff}
@@ -85,9 +86,8 @@ theorem synth_mem_rawOutside {u : Fin B} {g : S.Coeff}
   by_cases ha : a ∈ S.allowedValues u i
   · apply Submodule.smul_mem
     apply Submodule.subset_span
-    refine ⟨i, a.1, ?_, ?_, rfl⟩
-    · exact (S.mem_allowedValues_iff u i a).1 ha |>.1
-    · exact (S.mem_allowedValues_iff u i a).1 ha |>.2
+    have hallowed := (S.mem_allowedValues_iff u i a).1 ha
+    exact ⟨i, a.1, hallowed.1, hallowed.2, rfl⟩
   · rw [hg i a ha]
     simp
 
@@ -132,7 +132,7 @@ theorem synth_deltaCoeff (u : Fin B) (i : Fin d)
 
 /-- The coefficient synthesis range is exactly the raw outside-cylinder span. -/
 theorem map_outsideCoeff_eq_rawOutside (u : Fin B) :
-    S.outsideCoeffSpace u.map S.synthLinear = S.rawOutsideSpace u := by
+    (S.outsideCoeffSpace u).map S.synthLinear = S.rawOutsideSpace u := by
   apply le_antisymm
   · rintro f ⟨g, hg, rfl⟩
     exact S.synth_mem_rawOutside hg
@@ -156,9 +156,10 @@ theorem map_rawInside_eq_inside (u : Fin B) :
     exact ⟨i, hui, rfl⟩
   · apply Submodule.span_le.2
     rintro f ⟨i, hui, rfl⟩
-    refine ⟨S.rawFiber i u, ?_, rfl⟩
-    apply Submodule.subset_span
-    exact ⟨i, hui, rfl⟩
+    refine ⟨S.rawFiber i u, ?_, ?_⟩
+    · apply Submodule.subset_span
+      exact ⟨i, hui, rfl⟩
+    · rfl
 
 /-- Restriction maps the raw outside span exactly onto the legal outside span. -/
 theorem map_rawOutside_eq_outside (u : Fin B) :
@@ -172,9 +173,10 @@ theorem map_rawOutside_eq_outside (u : Fin B) :
     exact ⟨i, a, hcompat, hne, rfl⟩
   · apply Submodule.span_le.2
     rintro f ⟨i, a, hcompat, hne, rfl⟩
-    refine ⟨S.rawFiber i a, ?_, rfl⟩
-    apply Submodule.subset_span
-    exact ⟨i, a, hcompat, hne, rfl⟩
+    refine ⟨S.rawFiber i a, ?_, ?_⟩
+    · apply Submodule.subset_span
+      exact ⟨i, a, hcompat, hne, rfl⟩
+    · rfl
 
 /-- Every legal outside vector is the restriction of an additive product-table
 vector with correctly supported coefficients. -/
