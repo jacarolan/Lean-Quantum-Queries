@@ -91,9 +91,12 @@ theorem OutsideCoeff.rawInner_synth_rawAtU {u : Fin B}
   classical
   have hsynth : S.synth c.val = ∑ j, S.lift j (c.val j) := by
     funext x
-    simp only [synth, lift, Finset.sum_apply]
+    change (∑ j, c.val j (x j)) = ∑ j, c.val j (x j)
+    rfl
   rw [hsynth, S.rawInner_sum_left]
-  rw [← Finset.sum_erase_add _ _ (Finset.mem_univ i)]
+  rw [← Finset.sum_erase_add Finset.univ
+    (fun j => S.rawInner (S.lift j (c.val j)) (S.rawAtU u i))
+    (Finset.mem_univ i)]
   rw [OutsideCoeff.rawInner_lift_rawAtU_self (S := S) c i hui]
   simp only [add_zero]
   have hsum :
@@ -108,8 +111,8 @@ theorem OutsideCoeff.rawInner_synth_rawAtU {u : Fin B}
       (Finset.ne_of_mem_erase hj) hui
   rw [hsum]
   unfold totalMean
-  have herase := Finset.sum_erase_add (fun j => S.coordAvg j (c.val j))
-    (Finset.mem_univ i)
+  have herase := Finset.sum_erase_add Finset.univ
+    (fun j => S.coordAvg j (c.val j)) (Finset.mem_univ i)
   linarith
 
 /-- The raw difference of two complete `u`-fibers is one of the explicit
