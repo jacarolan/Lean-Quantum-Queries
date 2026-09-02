@@ -17,8 +17,9 @@ noncomputable def rawOccupancyCount (u : Fin B) : S.RawVector :=
 
 /-- Uniform product-table energy on placements occupying the distinguished
 block. -/
-noncomputable def rawOccupiedEnergy (u : Fin B) (f : S.RawVector) : ℝ :=
-  S.rawAvg fun x => if S.RawOccupied u x then (f x) ^ 2 else 0
+noncomputable def rawOccupiedEnergy (u : Fin B) (f : S.RawVector) : ℝ := by
+  classical
+  exact S.rawAvg fun x => if S.RawOccupied u x then (f x) ^ 2 else 0
 
 private theorem rawPlacement_nonempty : Nonempty S.RawPlacement := by
   classical
@@ -65,6 +66,7 @@ theorem rawOccupancyCount_nonneg (u : Fin B) (x : S.RawPlacement) :
     0 ≤ S.rawOccupancyCount u x := by
   classical
   unfold rawOccupancyCount
+  simp only [Finset.sum_apply]
   exact Finset.sum_nonneg fun i _ => S.rawAtU_nonneg u i x
 
 /-- An occupied product placement has occupancy count at least one. -/
@@ -80,15 +82,17 @@ theorem one_le_rawOccupancyCount (u : Fin B) (x : S.RawPlacement)
     _ ≤ ∑ j, S.rawAtU u j x :=
       Finset.single_le_sum (fun j _ => S.rawAtU_nonneg u j x)
         (Finset.mem_univ i)
-    _ = S.rawOccupancyCount u x := by rfl
+    _ = S.rawOccupancyCount u x := by
+      simp [rawOccupancyCount]
 
 /-- Occupied energy is bounded by occupancy-count-weighted energy. -/
 theorem rawOccupiedEnergy_le_count (u : Fin B) (f : S.RawVector) :
     S.rawOccupiedEnergy u f ≤
       S.rawAvg (fun x => S.rawOccupancyCount u x * (f x) ^ 2) := by
+  classical
+  unfold rawOccupiedEnergy
   apply S.rawAvg_mono
   intro x
-  unfold rawOccupiedEnergy
   by_cases hx : S.RawOccupied u x
   · simp only [hx, if_true]
     have hs := sq_nonneg (f x)
@@ -153,7 +157,10 @@ theorem q_mul_rawAvg_occupancyCount_le {q t : ℕ}
   calc
     ∑ i, (q : ℝ) * S.rawAvg (S.rawAtU u i) ≤ ∑ _i : Fin d, (8 : ℝ) :=
       Finset.sum_le_sum fun i _ => S.q_mul_rawAvg_rawAtU_le_eight H u i
-    _ = 8 * (d : ℝ) := by simp [Finset.sum_const, nsmul_eq_mul]
+    _ = 8 * (d : ℝ) := by
+      simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin,
+        nsmul_eq_mul]
+      ring
 
 /-- Centered lift associated with one coordinate row. -/
 noncomputable def centeredLift {u : Fin B} (c : S.OutsideCoeff u)
@@ -223,6 +230,7 @@ theorem q_mul_rawAtCenteredSq_le_eight_variance
       _ ≤ 8 * S.coefficientVariance c j :=
         mul_le_mul_of_nonneg_right hq hv
   · rw [S.rawAtCenteredSq_eq_zero_of_not_mem c i j hui]
+    simp only [mul_zero]
     exact mul_nonneg (by norm_num) (S.coefficientVariance_nonneg c j)
 
 /-- The same-coordinate cylinder moment is the squared row mean divided by
