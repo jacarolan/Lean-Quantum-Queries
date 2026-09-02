@@ -22,21 +22,7 @@ jobs:
 
       - name: Normalize finite-sum arithmetic
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('LeanQuantumQueries/IndependentMatchingRawOccupancyBound.lean')
-          text = path.read_text()
-          old = """          rw [Finset.mul_sum]
-          ring
-"""
-          new = """          rw [Finset.mul_sum]
-          ring_nf
-"""
-          count = text.count(old)
-          if count != 1:
-              raise SystemExit(f'expected one target block, found {count}')
-          path.write_text(text.replace(old, new, 1))
-          PY
+          python3 -c "from pathlib import Path; p=Path('LeanQuantumQueries/IndependentMatchingRawOccupancyBound.lean'); s=p.read_text(); old='          rw [Finset.mul_sum]\\n          ring\\n'; new='          rw [Finset.mul_sum]\\n          ring_nf\\n'; assert s.count(old)==1, s.count(old); p.write_text(s.replace(old,new,1))"
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add LeanQuantumQueries/IndependentMatchingRawOccupancyBound.lean
