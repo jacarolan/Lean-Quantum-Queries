@@ -76,7 +76,7 @@ lemma row_mem_coefficientSpace {a : Fin 4} (ha : a ≠ u) :
     row a ∈ coefficientSpace := by
   let φ : Fin 4 → ℝ := fun b => if b = a then 1 else 0
   refine ⟨φ, 0, ?_, ?_, ?_⟩
-  · simp [φ, ha]
+  · simp [φ, Ne.symm ha]
   · rfl
   · funext p
     simp [row, φ, eq_comm]
@@ -86,7 +86,7 @@ lemma col_mem_coefficientSpace {a : Fin 4} (ha : a ≠ u) :
   let ψ : Fin 4 → ℝ := fun b => if b = a then 1 else 0
   refine ⟨0, ψ, ?_, ?_, ?_⟩
   · rfl
-  · simp [ψ, ha]
+  · simp [ψ, Ne.symm ha]
   · funext p
     simp [col, ψ, eq_comm]
 
@@ -125,10 +125,12 @@ space, hence not in the outside-cylinder span. -/
 lemma distinguished_row_not_mem_coefficientSpace : row u ∉ coefficientSpace := by
   intro h
   rcases h with ⟨φ, ψ, hφ, hψ, hf⟩
+  have hφ0 : φ 0 = 0 := by simpa [u] using hφ
+  have hψ0 : ψ 0 = 0 := by simpa [u] using hψ
   have h02 := congrFun hf p02
   have h10 := congrFun hf p10
   have h12 := congrFun hf p12
-  simp [row, u, p02, p10, p12, hφ, hψ] at h02 h10 h12
+  simp [row, u, p02, p10, p12, hφ0, hψ0] at h02 h10 h12
   linarith
 
 /-- This is the direct counterexample to the proposed exact-rerooting lemma:
@@ -161,6 +163,8 @@ lemma rootLine_inter_outside_eq_zero {g : TableVector}
   rcases hgroot with ⟨c, hgc⟩
   have hcoeff : g ∈ coefficientSpace := outsideSpace_le_coefficientSpace hgout
   rcases hcoeff with ⟨φ, ψ, hφ, hψ, hf⟩
+  have hφ0 : φ 0 = 0 := by simpa [u] using hφ
+  have hψ0 : ψ 0 = 0 := by simpa [u] using hψ
   have h02 := congrFun hgc p02
   have h10 := congrFun hgc p10
   have h12 := congrFun hgc p12
@@ -168,7 +172,7 @@ lemma rootLine_inter_outside_eq_zero {g : TableVector}
   have k10 := congrFun hf p10
   have k12 := congrFun hf p12
   simp [row, u, p02, p10, p12] at h02 h10 h12
-  simp [u, p02, p10, p12, hφ, hψ] at k02 k10 k12
+  simp [u, p02, p10, p12, hφ0, hψ0] at k02 k10 k12
   have hc : c = 0 := by linarith
   rw [hgc, hc]
   simp
@@ -215,8 +219,9 @@ lemma badVector_in_one_root_quotient : InOneRootOutsideQuotient badVector := by
 /-- A placement occupies the distinguished block if either coordinate is `u`. -/
 def Occupied (p : Placement) : Prop := p.1.1 = u ∨ p.1.2 = u
 
-noncomputable def occupiedEnergy (f : TableVector) : ℝ :=
-  ∑ p, if Occupied p then (f p) ^ 2 else 0
+noncomputable def occupiedEnergy (f : TableVector) : ℝ := by
+  classical
+  exact ∑ p, if Occupied p then (f p) ^ 2 else 0
 
 noncomputable def totalEnergy (f : TableVector) : ℝ :=
   ∑ p, (f p) ^ 2
