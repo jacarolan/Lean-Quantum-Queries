@@ -136,10 +136,12 @@ noncomputable def pairFiberEquiv (i j : Fin d) (hji : j ≠ i)
     funext k
     by_cases hki : k = i
     · subst k
-      simpa using x.2.1.symm
+      rw [S.insertAt₂_left i j hji a b]
+      exact x.2.1.symm
     · by_cases hkj : k = j
       · subst k
-        simpa using x.2.2.symm
+        rw [S.insertAt₂_right i j hji a b]
+        exact x.2.2.symm
       · exact S.insertAt₂_ne i j k hki hkj a b (fun l => x.1 l.1)
   right_inv := by
     intro y
