@@ -1,0 +1,40 @@
+name: Independent Matching Full Verified
+
+on:
+  push:
+    branches: ["independent-matching-occupancy-formalization"]
+  workflow_dispatch:
+
+concurrency:
+  group: independent-matching-full-verified-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and user axioms
+        run: |
+          if grep -RInE '(^|[^A-Za-z])(sorry|admit|axiom)([^A-Za-z]|$)' --include='*.lean' LeanQuantumQueries LeanQuantumQueries.lean; then
+            echo 'Found a forbidden proof placeholder or axiom.'
+            exit 1
+          fi
+
+      - name: Install Lean toolchain
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Restore Lake directory
+        uses: actions/cache@v4
+        with:
+          path: .lake
+          key: lean-4.30.0-${{ runner.os }}-${{ hashFiles('lake-manifest.json') }}
+
+      - name: Restore mathlib cache
+        run: lake exe cache get
+
+      - name: Kernel-check finite-table theorem
+        run: lake build LeanQuantumQueries.IndependentMatchingFiniteTableVerified
