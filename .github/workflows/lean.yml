@@ -2,7 +2,7 @@ name: Lean CI
 
 on:
   push:
-    branches: ["main", "proof"]
+    branches: ["main", "proof", "block-occupancy-counterexample"]
   pull_request:
     branches: ["main"]
   workflow_dispatch:
