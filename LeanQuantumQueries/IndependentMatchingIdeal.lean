@@ -93,7 +93,6 @@ theorem rawAvg_mul_lift (i j : Fin d) (hji : j ≠ i)
         ((S.orbit i).card * (S.orbit j).card : ℝ) by ring]
   rw [mul_div_mul_left _ _ (S.remaining₂_card_ne_zero i j)]
   field_simp [S.orbit_card_ne_zero i, S.orbit_card_ne_zero j]
-  ring
 
 /-- Linearity of product averaging. -/
 theorem rawAvg_add (f g : S.RawVector) :
@@ -273,7 +272,7 @@ theorem rawNormSq_synth
     intro i _
     rw [S.rawInner_sum_right]
   rw [hConstSum, hSumConst, hSumSum, hdouble, S.rawInner_const_const]
-  simp [rawNormSq]
+  ring
 
 end SectorData
 end IndependentMatchingBlockOccupancy
