@@ -57,7 +57,8 @@ theorem OutsideCoeff.rawInner_lift_rawAtU_self {u : Fin B}
     by_cases ha : a.1 = u
     · have hau : a = ⟨u, hui⟩ := Subtype.ext ha
       subst a
-      simp [c.atU_eq_zero i hui]
+      rw [OutsideCoeff.atU_eq_zero (S := S) c i hui]
+      simp
     · simp [ha]
   rw [hzero]
   simp
@@ -70,7 +71,7 @@ theorem OutsideCoeff.rawInner_lift_rawAtU_ne {u : Fin B}
       S.coordAvg j (c.val j) /
         ((S.orbit i).card : ℝ) := by
   rw [S.rawAtU_eq_lift_indicator]
-  rw [S.rawInner_lift_lift j i hji,
+  rw [S.rawInner_lift_lift j i (Ne.symm hji),
     S.coordAvg_orbitIndicator u i hui]
   ring
 
@@ -88,26 +89,28 @@ theorem OutsideCoeff.rawInner_synth_rawAtU {u : Fin B}
       (S.totalMean c.val - S.coordAvg i (c.val i)) /
         ((S.orbit i).card : ℝ) := by
   classical
-  rw [show S.synth c.val = ∑ j, S.lift j (c.val j) by
+  have hsynth : S.synth c.val = ∑ j, S.lift j (c.val j) := by
     funext x
-    simp [synth, lift]]
-  rw [S.rawInner_sum_left]
+    simp only [synth, lift, Finset.sum_apply]
+  rw [hsynth, S.rawInner_sum_left]
   rw [← Finset.sum_erase_add _ _ (Finset.mem_univ i)]
-  rw [c.rawInner_lift_rawAtU_self i hui]
-  simp only [zero_add]
-  have hne : ∀ j ∈ (Finset.univ.erase i), j ≠ i := by
+  rw [OutsideCoeff.rawInner_lift_rawAtU_self (S := S) c i hui]
+  simp only [add_zero]
+  have hsum :
+      (∑ j ∈ Finset.univ.erase i,
+        S.rawInner (S.lift j (c.val j)) (S.rawAtU u i)) =
+      (∑ j ∈ Finset.univ.erase i, S.coordAvg j (c.val j)) /
+        ((S.orbit i).card : ℝ) := by
+    rw [Finset.sum_div]
+    apply Finset.sum_congr rfl
     intro j hj
-    exact Finset.ne_of_mem_erase hj
-  simp_rw [c.rawInner_lift_rawAtU_ne i _ (hne _ ‹_›) hui]
-  rw [← Finset.sum_div]
+    exact OutsideCoeff.rawInner_lift_rawAtU_ne (S := S) c i j
+      (Finset.ne_of_mem_erase hj) hui
+  rw [hsum]
   unfold totalMean
-  have hmean :
-      (∑ j ∈ Finset.univ.erase i, S.coordAvg j (c.val j)) =
-        (∑ j, S.coordAvg j (c.val j)) - S.coordAvg i (c.val i) := by
-    have h := Finset.sum_erase_add (fun j => S.coordAvg j (c.val j))
-      (Finset.mem_univ i)
-    linarith
-  rw [hmean]
+  have herase := Finset.sum_erase_add (fun j => S.coordAvg j (c.val j))
+    (Finset.mem_univ i)
+  linarith
 
 /-- The raw difference of two complete `u`-fibers is one of the explicit
 common generators. -/
@@ -138,9 +141,9 @@ theorem OutsideCoeff.complete_scaled_defect_eq {u : Fin B}
       (S.totalMean c.val - S.coordAvg j (c.val j)) /
         ((S.orbit j).card : ℝ) := by
   have hzero := horth _ (S.rawAtUDifference_mem_common u i j hi hj hui huj)
-  rw [S.rawInner_sub_right,
-    c.rawInner_synth_rawAtU i hui,
-    c.rawInner_synth_rawAtU j huj] at hzero
+  rw [S.rawInner_sub_right] at hzero
+  have hi' := OutsideCoeff.rawInner_synth_rawAtU (S := S) c i hui
+  have hj' := OutsideCoeff.rawInner_synth_rawAtU (S := S) c j huj
   linarith
 
 /-- If a complete family avoids the distinguished block, every complete
@@ -151,10 +154,13 @@ theorem OutsideCoeff.complete_mean_eq_total_of_avoiding {u : Fin B}
     (hui : u ∈ S.orbit i) (huh : u ∉ S.orbit h) :
     S.coordAvg i (c.val i) = S.totalMean c.val := by
   have hzero := horth _ (S.rawAtU_mem_common_of_avoiding u i h hi hh hui huh)
-  rw [c.rawInner_synth_rawAtU i hui] at hzero
+  have hi' := OutsideCoeff.rawInner_synth_rawAtU (S := S) c i hui
+  rw [hi'] at hzero
   have hcard : ((S.orbit i).card : ℝ) ≠ 0 := by
     exact_mod_cast (S.orbit_nonempty i).card_ne_zero
-  exact sub_eq_zero.mp (div_eq_zero_iff.mp hzero |>.resolve_right hcard)
+  have hnum : S.totalMean c.val - S.coordAvg i (c.val i) = 0 := by
+    exact (div_eq_zero_iff.mp hzero).resolve_right hcard
+  linarith
 
 end SectorData
 end IndependentMatchingBlockOccupancy
