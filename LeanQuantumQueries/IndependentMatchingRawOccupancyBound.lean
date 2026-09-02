@@ -60,6 +60,32 @@ theorem rawOccupiedEnergy_synth_le_decomposition {u : Fin B}
       2 * (S.totalMean c.val) ^ 2 * S.rawAvg (S.rawOccupancyCount u) +
         2 * (d : ℝ) * ∑ j, S.rawCountCenteredSq c j := by
   classical
+  have hfirstAvg :
+      S.rawAvg (fun x =>
+        2 * (S.totalMean c.val) ^ 2 * S.rawOccupancyCount u x) =
+        2 * (S.totalMean c.val) ^ 2 *
+          S.rawAvg (S.rawOccupancyCount u) := by
+    rw [show (fun x =>
+        2 * (S.totalMean c.val) ^ 2 * S.rawOccupancyCount u x) =
+      (2 * (S.totalMean c.val) ^ 2) • S.rawOccupancyCount u by
+        funext x
+        rfl]
+    rw [S.rawAvg_smul]
+  have hsecondAvg :
+      S.rawAvg (fun x =>
+        2 * (d : ℝ) * ∑ j,
+          S.rawOccupancyCount u x * (S.centeredLift c j x) ^ 2) =
+        2 * (d : ℝ) * ∑ j, S.rawCountCenteredSq c j := by
+    rw [show (fun x =>
+        2 * (d : ℝ) * ∑ j,
+          S.rawOccupancyCount u x * (S.centeredLift c j x) ^ 2) =
+      (2 * (d : ℝ)) •
+        ∑ j, (fun x =>
+          S.rawOccupancyCount u x * (S.centeredLift c j x) ^ 2) by
+        funext x
+        simp only [Pi.smul_apply, smul_eq_mul, Finset.sum_apply]]
+    rw [S.rawAvg_smul, S.rawAvg_sum]
+    rfl
   calc
     S.rawOccupiedEnergy u (S.synth c.val) ≤
         S.rawAvg (fun x => S.rawOccupancyCount u x *
@@ -73,14 +99,29 @@ theorem rawOccupiedEnergy_synth_le_decomposition {u : Fin B}
       intro x
       have hsq := S.synth_sq_le_mean_add_centered c x
       have hc := S.rawOccupancyCount_nonneg u x
-      nlinarith
+      have hmul := mul_le_mul_of_nonneg_left hsq hc
+      calc
+        S.rawOccupancyCount u x * (S.synth c.val x) ^ 2 ≤
+            S.rawOccupancyCount u x *
+              (2 * (S.totalMean c.val) ^ 2 +
+                2 * (d : ℝ) * ∑ j, (S.centeredLift c j x) ^ 2) := hmul
+        _ = 2 * (S.totalMean c.val) ^ 2 * S.rawOccupancyCount u x +
+            2 * (d : ℝ) * ∑ j,
+              S.rawOccupancyCount u x * (S.centeredLift c j x) ^ 2 := by
+          rw [Finset.mul_sum]
+          ring
     _ = 2 * (S.totalMean c.val) ^ 2 * S.rawAvg (S.rawOccupancyCount u) +
         2 * (d : ℝ) * ∑ j, S.rawCountCenteredSq c j := by
-      unfold rawCountCenteredSq rawAvg
-      rw [Finset.sum_add_distrib]
-      simp only [Finset.sum_mul, Finset.mul_sum, Finset.sum_div]
-      rw [Finset.sum_comm]
-      ring
+      rw [show (fun x =>
+          2 * (S.totalMean c.val) ^ 2 * S.rawOccupancyCount u x +
+            2 * (d : ℝ) * ∑ j,
+              S.rawOccupancyCount u x * (S.centeredLift c j x) ^ 2) =
+        (fun x => 2 * (S.totalMean c.val) ^ 2 *
+          S.rawOccupancyCount u x) +
+        (fun x => 2 * (d : ℝ) * ∑ j,
+          S.rawOccupancyCount u x * (S.centeredLift c j x) ^ 2) by
+          rfl]
+      rw [S.rawAvg_add, hfirstAvg, hsecondAvg]
 
 /-- One diagonal cylinder moment is controlled by the complete-family mean
 term plus a universal multiple of the corresponding row variance. -/
@@ -91,16 +132,16 @@ theorem q_mul_rawAtCenteredSq_self_le {q t : ℕ} {u : Fin B}
     (i : Fin d) :
     (q : ℝ) * S.rawAtCenteredSq c i i ≤
       (if i ∈ S.completeAtU u then
-        (q : ℝ) * (S.coefficientMean c i) ^ 2 /
-          ((S.orbit i).card : ℝ)
+        (q : ℝ) * ((S.coefficientMean c i) ^ 2 /
+          ((S.orbit i).card : ℝ))
        else 0) + 64 * S.coefficientVariance c i := by
   classical
   by_cases hiC : i ∈ S.completeAtU u
   · have hui := ((S.mem_completeAtU_iff u i).1 hiC).2
     rw [S.rawAtCenteredSq_self_eq_of_mem c i hui]
     simp only [hiC, if_true]
-    exact le_add_of_nonneg_right
-      (mul_nonneg (by norm_num) (S.coefficientVariance_nonneg c i))
+    have hv := S.coefficientVariance_nonneg c i
+    nlinarith
   · simp only [hiC, if_false, zero_add]
     by_cases hui : u ∈ S.orbit i
     · have hinc : ¬ S.Complete i := by
@@ -136,15 +177,32 @@ theorem q_mul_sum_rawAtCenteredSq_self_le {q t : ℕ} {u : Fin B}
       20000 * (t : ℝ) * S.rawNormSq (S.synth c.val) +
         64 * S.totalVariance c := by
   classical
+  let T : Fin d → ℝ := fun i =>
+    (q : ℝ) * ((S.coefficientMean c i) ^ 2 /
+      ((S.orbit i).card : ℝ))
   have hpoint :
       ∑ i, (q : ℝ) * S.rawAtCenteredSq c i i ≤
-        ∑ i, ((if i ∈ S.completeAtU u then
-          (q : ℝ) * (S.coefficientMean c i) ^ 2 /
-            ((S.orbit i).card : ℝ)
-        else 0) + 64 * S.coefficientVariance c i) := by
+        ∑ i, ((if i ∈ S.completeAtU u then T i else 0) +
+          64 * S.coefficientVariance c i) := by
     apply Finset.sum_le_sum
     intro i _
     exact S.q_mul_rawAtCenteredSq_self_le c H hgapU i
+  have hite :
+      (∑ i, if i ∈ S.completeAtU u then T i else 0) =
+        ∑ i ∈ S.completeAtU u, T i := by
+    simp only [Finset.sum_ite_mem, Finset.univ_inter]
+  have hTsum :
+      (∑ i ∈ S.completeAtU u, T i) =
+        (q : ℝ) * ∑ i ∈ S.completeAtU u,
+          (S.coefficientMean c i) ^ 2 /
+            ((S.orbit i).card : ℝ) := by
+    unfold T
+    rw [Finset.mul_sum]
+  have hVsum :
+      (∑ i, 64 * S.coefficientVariance c i) =
+        64 * S.totalVariance c := by
+    unfold totalVariance
+    rw [Finset.mul_sum]
   have hsum :
       (q : ℝ) * ∑ i, S.rawAtCenteredSq c i i ≤
         (q : ℝ) * ∑ i ∈ S.completeAtU u,
@@ -152,9 +210,20 @@ theorem q_mul_sum_rawAtCenteredSq_self_le {q t : ℕ} {u : Fin B}
             ((S.orbit i).card : ℝ) +
           64 * S.totalVariance c := by
     rw [Finset.mul_sum]
-    simpa [totalVariance, Finset.sum_add_distrib, Finset.mul_sum] using hpoint
-  exact hsum.trans (add_le_add_right
-    (S.complete_weighted_mean_bound c H horth hgapU) _)
+    calc
+      ∑ i, (q : ℝ) * S.rawAtCenteredSq c i i ≤
+          ∑ i, ((if i ∈ S.completeAtU u then T i else 0) +
+            64 * S.coefficientVariance c i) := hpoint
+      _ = (∑ i, if i ∈ S.completeAtU u then T i else 0) +
+          ∑ i, 64 * S.coefficientVariance c i :=
+        Finset.sum_add_distrib
+      _ = (q : ℝ) * ∑ i ∈ S.completeAtU u,
+          (S.coefficientMean c i) ^ 2 /
+            ((S.orbit i).card : ℝ) +
+          64 * S.totalVariance c := by
+        rw [hite, hTsum, hVsum]
+  have hcomplete := S.complete_weighted_mean_bound c H horth hgapU
+  linarith
 
 /-- One occupancy-count/centered-row moment is its diagonal term plus at most
 `8d/q` times that row's variance. -/
@@ -181,7 +250,7 @@ theorem q_mul_rawCountCenteredSq_le {q t : ℕ} {u : Fin B}
         apply Finset.sum_le_sum
         intro i hi
         exact S.q_mul_rawAtCenteredSq_le_eight_variance c H i j
-          (Finset.ne_of_mem_erase hi)
+          (Ne.symm (Finset.ne_of_mem_erase hi))
       _ = ((Finset.univ.erase j).card : ℝ) *
           (8 * S.coefficientVariance c j) := by
         simp [Finset.sum_const, nsmul_eq_mul]
