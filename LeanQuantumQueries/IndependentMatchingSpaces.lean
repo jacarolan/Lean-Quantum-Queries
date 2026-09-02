@@ -64,8 +64,11 @@ theorem lift_eq_sum_fibers (i : Fin d)
   rw [Fintype.sum_eq_single (x i)]
   · simp [lift, rawFiber, block]
   · intro a ha
-    intro hxa
-    exact (ha hxa.symm).elim
+    have hne : (x i).1 ≠ a.1 := by
+      intro h
+      apply ha
+      exact Subtype.ext h.symm
+    simp [rawFiber, block, hne]
 
 /-- Coefficients in `outsideCoeffSpace` synthesize into the raw outside span. -/
 theorem synth_mem_rawOutside {u : Fin B} {g : S.Coeff}
