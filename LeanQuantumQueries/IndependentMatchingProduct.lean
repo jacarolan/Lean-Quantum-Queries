@@ -10,7 +10,7 @@ abbrev Except (i : Fin d) := {j : Fin d // j ≠ i}
 
 /-- Product of all coordinate orbits except coordinate `i`. -/
 abbrev Remaining (i : Fin d) :=
-  ∀ j : S.Except i, {a : Fin B // a ∈ S.orbit j.1}
+  ∀ j : Except i, {a : Fin B // a ∈ S.orbit j.1}
 
 /-- Splitting a product placement into one fixed coordinate and all remaining
 coordinates. -/
@@ -36,12 +36,12 @@ noncomputable def fixedFiberEquiv (i : Fin d)
         funext j
         by_cases h : j = i
         · subst j
-          simp [backward, forward, x.2]
-        · simp [backward, forward, h]
+          simp [backward, x.2]
+        · simp [backward, h]
       right_inv := by
         intro y
         funext j
-        simp [backward, forward, j.2] }
+        simp [backward, j.2] }
 
 /-- Cardinality of a fixed product-coordinate fiber. -/
 theorem card_fixedFiber (i : Fin d)
@@ -78,7 +78,7 @@ abbrev Except₂ (i j : Fin d) := {k : Fin d // k ≠ i ∧ k ≠ j}
 
 /-- Product of all coordinate orbits except coordinates `i` and `j`. -/
 abbrev Remaining₂ (i j : Fin d) :=
-  ∀ k : S.Except₂ i j, {a : Fin B // a ∈ S.orbit k.1}
+  ∀ k : Except₂ i j, {a : Fin B // a ∈ S.orbit k.1}
 
 /-- Splitting a product placement after two distinct coordinates are fixed. -/
 noncomputable def pairFiberEquiv (i j : Fin d) (hji : j ≠ i)
@@ -108,15 +108,15 @@ noncomputable def pairFiberEquiv (i j : Fin d) (hji : j ≠ i)
         funext k
         by_cases hki : k = i
         · subst k
-          simp [backward, forward, x.2.1, hji]
+          simp [backward, x.2.1]
         · by_cases hkj : k = j
           · subst k
-            simp [backward, forward, hki, x.2.2]
-          · simp [backward, forward, hki, hkj]
+            simp [backward, hki, x.2.2]
+          · simp [backward, hki, hkj]
       right_inv := by
         intro y
         funext k
-        simp [backward, forward, k.2.1, k.2.2] }
+        simp [backward, k.2.1, k.2.2] }
 
 /-- Cardinality of a two-coordinate fiber. -/
 theorem card_pairFiber (i j : Fin d) (hji : j ≠ i)
