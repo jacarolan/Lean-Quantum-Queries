@@ -29,15 +29,22 @@ jobs:
           curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
 
-      - name: Cache Lake directory
-        uses: actions/cache@v4
+      - name: Restore Lake directory
+        id: lake-cache
+        uses: actions/cache/restore@v4
         with:
           path: .lake
           key: lean-4.30.0-${{ runner.os }}-${{ hashFiles('lake-manifest.json') }}
-          save-always: true
 
       - name: Restore mathlib cache
         run: lake exe cache get
 
       - name: Build target
         run: lake build LeanQuantumQueries.IndependentMatchingProduct
+
+      - name: Save Lake directory
+        if: always() && steps.lake-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .lake
+          key: lean-4.30.0-${{ runner.os }}-${{ hashFiles('lake-manifest.json') }}
