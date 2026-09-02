@@ -156,13 +156,13 @@ theorem outsideSum_mem_outside (u : Fin B) (i : Fin d)
   classical
   unfold outsideSum
   apply Submodule.sum_mem
-  intro a ha
-  apply Submodule.sum_mem
-  intro _ hmem
+  intro a hmem
   apply Submodule.subset_span
   refine ⟨i, a, ?_, ?_, rfl⟩
-  · simpa [Complete, hi] using (Finset.mem_of_mem_erase hmem)
-  · exact (Finset.ne_of_mem_erase hmem)
+  · have hi' : S.compat i = S.orbit i := hi
+    rw [hi']
+    exact Finset.mem_of_mem_erase hmem
+  · exact Finset.ne_of_mem_erase hmem
 
 /-- The distinguished cylinder is an inside generator for a complete family
 whose orbit contains `u`. -/
@@ -171,7 +171,9 @@ theorem atU_mem_inside (u : Fin B) (i : Fin d)
     S.atU u i ∈ S.insideSpace u := by
   apply Submodule.subset_span
   refine ⟨i, ?_, rfl⟩
-  simpa [Complete, hi] using hui
+  have hi' : S.compat i = S.orbit i := hi
+  rw [hi']
+  exact hui
 
 /-- If `u` belongs to an orbit, the non-`u` fiber sum equals `1 - atU`. -/
 theorem outsideSum_eq_one_sub_atU (u : Fin B) (i : Fin d)
@@ -190,7 +192,7 @@ theorem outsideSum_eq_one_of_not_mem (u : Fin B) (i : Fin d)
     S.outsideSum u i = (1 : S.Vector) := by
   classical
   unfold outsideSum
-  rw [Finset.erase_eq_of_not_mem hui]
+  rw [Finset.erase_eq_self.mpr hui]
   exact S.sum_fibers_eq_one i
 
 /-- Exact common-direction identity for two complete rooting families. -/
