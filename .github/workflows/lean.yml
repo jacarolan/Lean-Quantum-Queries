@@ -28,5 +28,5 @@ jobs:
       - name: Restore mathlib cache
         run: lake exe cache get
 
-      - name: Elaborate target file
-        run: lake env lean LeanQuantumQueries/IndependentMatchingProduct.lean
+      - name: Build target
+        run: lake build LeanQuantumQueries.IndependentMatchingProduct
