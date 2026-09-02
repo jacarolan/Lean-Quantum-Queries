@@ -6,83 +6,98 @@ open scoped BigOperators
 namespace IndependentMatchingBlockOccupancy
 namespace SectorData
 
-variable {d B : ℕ} (S : SectorData d B)
+variable {d B : ℕ}
 
-/-- Numerical consequences of the accepted block-orbit conditions in one
-sector.  A later file derives these fields from the three-colored block tree. -/
-structure SectorBounds (q t : ℕ) : Prop where
+/-- Numerical orbit bounds used by the product-table calculation.  The
+incomplete-family gap is kept as a theorem parameter because it depends on
+the distinguished block. -/
+structure SectorBounds (S : SectorData d B) (q t : ℕ) : Prop where
   t_pos : 1 ≤ t
   coord_le : d ≤ t
   orbit_lower : ∀ i, q ≤ 8 * (S.orbit i).card
   orbit_upper : ∀ i, (S.orbit i).card ≤ q
-  incomplete_gap : ∀ i, ¬ S.Complete i →
-    (S.orbit i).card ≤ 8 * (S.missingValues (0 : Fin B) i).card
 
 /-- Complete rooting families whose orbit contains the distinguished block. -/
-def completeAtU (u : Fin B) : Finset (Fin d) :=
-  Finset.univ.filter fun i => S.Complete i ∧ u ∈ S.orbit i
+noncomputable def completeAtU (S : SectorData d B) (u : Fin B) :
+    Finset (Fin d) := by
+  classical
+  exact Finset.univ.filter fun i => S.Complete i ∧ u ∈ S.orbit i
 
 /-- Structurally incomplete rooting families. -/
-def incompleteIndices : Finset (Fin d) :=
-  Finset.univ.filter fun i => ¬ S.Complete i
+noncomputable def incompleteIndices (S : SectorData d B) :
+    Finset (Fin d) := by
+  classical
+  exact Finset.univ.filter fun i => ¬ S.Complete i
 
 /-- Mean of the coefficient row belonging to one coordinate. -/
-noncomputable def coefficientMean {u : Fin B} (c : S.OutsideCoeff u)
-    (i : Fin d) : ℝ := S.coordAvg i (c.val i)
+noncomputable def coefficientMean (S : SectorData d B) {u : Fin B}
+    (c : S.OutsideCoeff u) (i : Fin d) : ℝ :=
+  S.coordAvg i (c.val i)
 
 /-- Variance contribution of one centered coordinate row. -/
-noncomputable def coefficientVariance {u : Fin B} (c : S.OutsideCoeff u)
-    (i : Fin d) : ℝ :=
+noncomputable def coefficientVariance (S : SectorData d B) {u : Fin B}
+    (c : S.OutsideCoeff u) (i : Fin d) : ℝ :=
   S.rawNormSq (S.lift i (S.centered i (c.val i)))
 
 /-- Sum of all coordinate variances. -/
-noncomputable def totalVariance {u : Fin B} (c : S.OutsideCoeff u) : ℝ :=
+noncomputable def totalVariance (S : SectorData d B) {u : Fin B}
+    (c : S.OutsideCoeff u) : ℝ :=
   ∑ i, S.coefficientVariance c i
 
-@[simp] theorem mem_completeAtU_iff (u : Fin B) (i : Fin d) :
+@[simp] theorem mem_completeAtU_iff (S : SectorData d B)
+    (u : Fin B) (i : Fin d) :
     i ∈ S.completeAtU u ↔ S.Complete i ∧ u ∈ S.orbit i := by
+  classical
   simp [completeAtU]
 
-@[simp] theorem mem_incompleteIndices_iff (i : Fin d) :
+@[simp] theorem mem_incompleteIndices_iff (S : SectorData d B)
+    (i : Fin d) :
     i ∈ S.incompleteIndices ↔ ¬ S.Complete i := by
+  classical
   simp [incompleteIndices]
 
 /-- Every coordinate variance is nonnegative. -/
-theorem coefficientVariance_nonneg {u : Fin B} (c : S.OutsideCoeff u)
-    (i : Fin d) : 0 ≤ S.coefficientVariance c i := by
+theorem coefficientVariance_nonneg (S : SectorData d B) {u : Fin B}
+    (c : S.OutsideCoeff u) (i : Fin d) :
+    0 ≤ S.coefficientVariance c i := by
   rw [coefficientVariance, S.rawNormSq_lift]
   unfold coordAvg
-  exact div_nonneg (Finset.sum_nonneg fun _ _ => sq_nonneg _)
-    (by positivity)
+  have hcard : 0 < ((S.orbit i).card : ℝ) := by
+    exact_mod_cast (S.orbit_nonempty i).card_pos
+  exact div_nonneg (Finset.sum_nonneg fun _ _ => sq_nonneg _) hcard.le
 
 /-- The total variance is nonnegative. -/
-theorem totalVariance_nonneg {u : Fin B} (c : S.OutsideCoeff u) :
-    0 ≤ S.totalVariance c := by
+theorem totalVariance_nonneg (S : SectorData d B) {u : Fin B}
+    (c : S.OutsideCoeff u) : 0 ≤ S.totalVariance c := by
+  classical
   apply Finset.sum_nonneg
   intro i _
   exact S.coefficientVariance_nonneg c i
 
 /-- Exact norm decomposition using the coefficient means and variances. -/
-theorem rawNormSq_synth_eq {u : Fin B} (c : S.OutsideCoeff u) :
+theorem rawNormSq_synth_eq (S : SectorData d B) {u : Fin B}
+    (c : S.OutsideCoeff u) :
     S.rawNormSq (S.synth c.val) =
       (S.totalMean c.val) ^ 2 + S.totalVariance c := by
   exact S.rawNormSq_synth c.val
 
 /-- Number of complete-at-`u` coordinates is at most the number of coordinates. -/
-theorem card_completeAtU_le (u : Fin B) :
+theorem card_completeAtU_le (S : SectorData d B) (u : Fin B) :
     (S.completeAtU u).card ≤ d := by
+  classical
   exact Finset.card_le_univ _
 
 /-- Number of incomplete coordinates is at most the number of coordinates. -/
-theorem card_incomplete_le : S.incompleteIndices.card ≤ d := by
+theorem card_incomplete_le (S : SectorData d B) :
+    S.incompleteIndices.card ≤ d := by
+  classical
   exact Finset.card_le_univ _
 
 /-- The mean of every incomplete coefficient row is controlled by its
 variance. -/
-theorem incomplete_mean_sq_le
-    {q t : ℕ} {u : Fin B} (c : S.OutsideCoeff u)
-    (H : S.SectorBounds q t)
-    (i : Fin d) (hi : ¬ S.Complete i)
+theorem incomplete_mean_sq_le (S : SectorData d B)
+    {u : Fin B} (c : S.OutsideCoeff u)
+    (i : Fin d)
     (hgapU : (S.orbit i).card ≤ 8 * (S.missingValues u i).card) :
     (S.coefficientMean c i) ^ 2 ≤
       8 * S.coefficientVariance c i := by
@@ -90,7 +105,7 @@ theorem incomplete_mean_sq_le
 
 /-- Cauchy--Schwarz plus the incomplete-family gap controls the sum of all
 incomplete row means. -/
-theorem incomplete_mean_sum_sq_le
+theorem incomplete_mean_sum_sq_le (S : SectorData d B)
     {q t : ℕ} {u : Fin B} (c : S.OutsideCoeff u)
     (H : S.SectorBounds q t)
     (hgapU : ∀ i, ¬ S.Complete i →
@@ -107,8 +122,7 @@ theorem incomplete_mean_sum_sq_le
     rw [Finset.mul_sum]
     apply Finset.sum_le_sum
     intro i hi
-    exact S.incomplete_mean_sq_le c H i
-      ((S.mem_incompleteIndices_iff i).1 hi)
+    exact S.incomplete_mean_sq_le c i
       (hgapU i ((S.mem_incompleteIndices_iff i).1 hi))
   have hvar :
       (∑ i ∈ I, S.coefficientVariance c i) ≤ S.totalVariance c := by
@@ -118,7 +132,8 @@ theorem incomplete_mean_sum_sq_le
     exact S.coefficientVariance_nonneg c i
   have hcardNat : I.card ≤ t :=
     le_trans S.card_incomplete_le H.coord_le
-  have hcard : (I.card : ℝ) ≤ (t : ℝ) := by exact_mod_cast hcardNat
+  have hcard : (I.card : ℝ) ≤ (t : ℝ) := by
+    exact_mod_cast hcardNat
   have hIvar : 0 ≤ ∑ i ∈ I, S.coefficientVariance c i := by
     apply Finset.sum_nonneg
     intro i _
@@ -128,7 +143,7 @@ theorem incomplete_mean_sum_sq_le
   nlinarith
 
 /-- Weighted contribution of means from complete rooting families. -/
-theorem complete_weighted_mean_bound
+theorem complete_weighted_mean_bound (S : SectorData d B)
     {q t : ℕ} {u : Fin B} (c : S.OutsideCoeff u)
     (H : S.SectorBounds q t)
     (horth : S.RawCommonOrthogonal u (S.synth c.val))
@@ -183,7 +198,8 @@ theorem complete_weighted_mean_bound
           simp [Finset.sum_const, nsmul_eq_mul]
     have hcardNat : C.card ≤ t :=
       le_trans (S.card_completeAtU_le u) H.coord_le
-    have hcard : (C.card : ℝ) ≤ (t : ℝ) := by exact_mod_cast hcardNat
+    have hcard : (C.card : ℝ) ≤ (t : ℝ) := by
+      exact_mod_cast hcardNat
     have ha2 : 0 ≤ a ^ 2 := sq_nonneg _
     rw [hnorm]
     nlinarith
@@ -219,12 +235,16 @@ theorem complete_weighted_mean_bound
           (∑ i ∈ C, S.coefficientMean c i) + b := by
       have hCeq : C = Finset.univ.filter S.Complete := by
         ext i
-        simp [C, completeAtU, hcontains i]
+        simp only [C, completeAtU, Finset.mem_filter, Finset.mem_univ,
+          true_and]
+        constructor
+        · exact fun hi => hi.1
+        · exact fun hi => ⟨hi, hcontains i hi⟩
       rw [hCeq]
       unfold b I incompleteIndices
-      exact Finset.sum_filter_add_sum_filter_not
+      exact (Finset.sum_filter_add_sum_filter_not
         (s := Finset.univ) (p := S.Complete)
-        (f := fun i => S.coefficientMean c i) |>.symm
+        (f := fun i => S.coefficientMean c i)).symm
     have hsumC :
         (∑ i ∈ C, S.coefficientMean c i) =
           (C.card : ℝ) * a -
@@ -243,14 +263,15 @@ theorem complete_weighted_mean_bound
     have heq :
         (∑ i ∈ C, ((S.orbit i).card : ℝ)) * lam =
           ((C.card : ℝ) - 1) * a + b := by
-      unfold a totalMean
+      unfold a
       rw [hpartition, hsumC]
       ring
     have hb : b ^ 2 ≤ 8 * (t : ℝ) * V := by
       exact S.incomplete_mean_sum_sq_le c H hgapU
     have hcardNat : C.card ≤ t :=
       le_trans (S.card_completeAtU_le u) H.coord_le
-    have hcard : (C.card : ℝ) ≤ (t : ℝ) := by exact_mod_cast hcardNat
+    have hcard : (C.card : ℝ) ≤ (t : ℝ) := by
+      exact_mod_cast hcardNat
     have hmpos : ∀ i ∈ C, 0 < ((S.orbit i).card : ℝ) := by
       intro i _
       exact_mod_cast (S.orbit_nonempty i).card_pos
