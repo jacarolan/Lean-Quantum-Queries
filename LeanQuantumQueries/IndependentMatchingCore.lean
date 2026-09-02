@@ -1,2 +1,2 @@
 import LeanQuantumQueries.IndependentMatchingFlatness
-import LeanQuantumQueries.IndependentMatchingCommon
+import LeanQuantumQueries.IndependentMatchingMeans
