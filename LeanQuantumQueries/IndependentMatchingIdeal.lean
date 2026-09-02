@@ -68,13 +68,14 @@ theorem rawAvg_lift (i : Fin d)
     S.rawAvg (S.lift i g) = S.coordAvg i g := by
   unfold rawAvg lift coordAvg
   rw [S.sum_coordinate i g, S.card_rawPlacement i]
-  field_simp [S.remaining_card_ne_zero i, S.orbit_card_ne_zero i] <;> ring
+  simpa using mul_div_mul_left (∑ a, g a) ((S.orbit i).card : ℝ)
+    (S.remaining_card_ne_zero i)
 
 /-- Average of a constant. -/
 theorem rawAvg_const (a : ℝ) : S.rawAvg (S.constVec a) = a := by
   unfold rawAvg constVec
   rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-  field_simp [S.raw_card_ne_zero] <;> ring
+  simpa using mul_div_cancel_left₀ a S.raw_card_ne_zero
 
 /-- Two distinct lifted coordinate functions factor under product averaging. -/
 theorem rawAvg_mul_lift (i j : Fin d) (hji : j ≠ i)
@@ -86,8 +87,13 @@ theorem rawAvg_mul_lift (i j : Fin d) (hji : j ≠ i)
   rw [S.sum_two_coordinates i j hji (fun a b => g a * h b),
     S.card_rawPlacement₂ i j hji]
   rw [← Fintype.sum_mul_sum]
-  field_simp [S.remaining₂_card_ne_zero i j,
-    S.orbit_card_ne_zero i, S.orbit_card_ne_zero j] <;> ring
+  rw [show (Fintype.card (S.Remaining₂ i j) : ℝ) *
+        (S.orbit i).card * (S.orbit j).card =
+      (Fintype.card (S.Remaining₂ i j) : ℝ) *
+        ((S.orbit i).card * (S.orbit j).card : ℝ) by ring]
+  rw [mul_div_mul_left _ _ (S.remaining₂_card_ne_zero i j)]
+  field_simp [S.orbit_card_ne_zero i, S.orbit_card_ne_zero j]
+  ring
 
 /-- Linearity of product averaging. -/
 theorem rawAvg_add (f g : S.RawVector) :
@@ -183,8 +189,10 @@ theorem coordAvg_centered (i : Fin d)
     S.coordAvg i (S.centered i g) = 0 := by
   change ((∑ a, (g a - (∑ b, g b) / ((S.orbit i).card : ℝ))) /
     ((S.orbit i).card : ℝ)) = 0
-  rw [Finset.sum_sub_distrib, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-  field_simp [S.orbit_card_ne_zero i] <;> ring
+  rw [Finset.sum_sub_distrib, Finset.sum_const, Finset.card_univ,
+    Fintype.card_coe, nsmul_eq_mul]
+  field_simp [S.orbit_card_ne_zero i]
+  ring
 
 /-- Synthesis of additive coordinate functions. -/
 noncomputable def synth
@@ -242,7 +250,7 @@ theorem rawNormSq_synth
     rw [Finset.sum_eq_single i]
     · rfl
     · intro j _ hji
-      rw [S.rawInner_lift_lift j i (Ne.symm hji)]
+      rw [S.rawInner_lift_lift i j hji]
       simp [S.coordAvg_centered]
     · simp
   have hConstSum :
@@ -265,7 +273,7 @@ theorem rawNormSq_synth
     intro i _
     rw [S.rawInner_sum_right]
   rw [hConstSum, hSumConst, hSumSum, hdouble, S.rawInner_const_const]
-  ring
+  simp [rawNormSq]
 
 end SectorData
 end IndependentMatchingBlockOccupancy
