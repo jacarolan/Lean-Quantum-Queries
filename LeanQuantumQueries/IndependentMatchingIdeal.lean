@@ -68,13 +68,13 @@ theorem rawAvg_lift (i : Fin d)
     S.rawAvg (S.lift i g) = S.coordAvg i g := by
   unfold rawAvg lift coordAvg
   rw [S.sum_coordinate i g, S.card_rawPlacement i]
-  field_simp [S.remaining_card_ne_zero i, S.orbit_card_ne_zero i]
+  field_simp [S.remaining_card_ne_zero i, S.orbit_card_ne_zero i] <;> ring
 
 /-- Average of a constant. -/
 theorem rawAvg_const (a : ℝ) : S.rawAvg (S.constVec a) = a := by
   unfold rawAvg constVec
   rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-  field_simp [S.raw_card_ne_zero]
+  field_simp [S.raw_card_ne_zero] <;> ring
 
 /-- Two distinct lifted coordinate functions factor under product averaging. -/
 theorem rawAvg_mul_lift (i j : Fin d) (hji : j ≠ i)
@@ -85,10 +85,9 @@ theorem rawAvg_mul_lift (i j : Fin d) (hji : j ≠ i)
   unfold rawAvg lift coordAvg
   rw [S.sum_two_coordinates i j hji (fun a b => g a * h b),
     S.card_rawPlacement₂ i j hji]
-  rw [Fintype.sum_mul_sum]
+  rw [← Fintype.sum_mul_sum]
   field_simp [S.remaining₂_card_ne_zero i j,
-    S.orbit_card_ne_zero i, S.orbit_card_ne_zero j]
-  ring
+    S.orbit_card_ne_zero i, S.orbit_card_ne_zero j] <;> ring
 
 /-- Linearity of product averaging. -/
 theorem rawAvg_add (f g : S.RawVector) :
@@ -102,7 +101,8 @@ theorem rawAvg_smul (c : ℝ) (f : S.RawVector) :
     S.rawAvg (c • f) = c * S.rawAvg f := by
   classical
   unfold rawAvg
-  simp only [Pi.smul_apply, smul_eq_mul, Finset.mul_sum]
+  simp only [Pi.smul_apply, smul_eq_mul]
+  rw [← Finset.mul_sum]
   ring
 
 /-- Bilinearity in the first argument. -/
@@ -181,10 +181,10 @@ noncomputable def centered (i : Fin d)
 theorem coordAvg_centered (i : Fin d)
     (g : {a : Fin B // a ∈ S.orbit i} → ℝ) :
     S.coordAvg i (S.centered i g) = 0 := by
-  unfold coordAvg centered
+  change ((∑ a, (g a - (∑ b, g b) / ((S.orbit i).card : ℝ))) /
+    ((S.orbit i).card : ℝ)) = 0
   rw [Finset.sum_sub_distrib, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-  field_simp [S.orbit_card_ne_zero i]
-  ring
+  field_simp [S.orbit_card_ne_zero i] <;> ring
 
 /-- Synthesis of additive coordinate functions. -/
 noncomputable def synth
@@ -206,7 +206,7 @@ theorem synth_eq_const_add_centered
   unfold synth constVec totalMean lift centered
   simp only [Pi.add_apply, Finset.sum_apply]
   rw [← Finset.sum_add_distrib]
-  ring
+  ring_nf
 
 /-- Exact squared-norm decomposition for additive coordinate functions on the
 uniform product table. -/
@@ -218,8 +218,7 @@ theorem rawNormSq_synth
   classical
   rw [S.synth_eq_const_add_centered g]
   unfold rawNormSq
-  rw [S.rawInner_add_left, S.rawInner_add_right, S.rawInner_add_right,
-    S.rawInner_sum_left, S.rawInner_sum_right]
+  rw [S.rawInner_add_left, S.rawInner_add_right, S.rawInner_add_right]
   have hcrossL :
       (∑ i, S.rawInner (S.lift i (S.centered i (g i)))
         (S.constVec (S.totalMean g))) = 0 := by
@@ -243,10 +242,29 @@ theorem rawNormSq_synth
     rw [Finset.sum_eq_single i]
     · rfl
     · intro j _ hji
-      rw [S.rawInner_lift_lift j i hji]
+      rw [S.rawInner_lift_lift j i (Ne.symm hji)]
       simp [S.coordAvg_centered]
     · simp
-  rw [hcrossL, hcrossR, hdouble, S.rawInner_const_const]
+  have hConstSum :
+      S.rawInner (S.constVec (S.totalMean g))
+        (∑ i, S.lift i (S.centered i (g i))) = 0 := by
+    rw [S.rawInner_sum_right]
+    exact hcrossR
+  have hSumConst :
+      S.rawInner (∑ i, S.lift i (S.centered i (g i)))
+        (S.constVec (S.totalMean g)) = 0 := by
+    rw [S.rawInner_sum_left]
+    exact hcrossL
+  have hSumSum :
+      S.rawInner (∑ i, S.lift i (S.centered i (g i)))
+        (∑ j, S.lift j (S.centered j (g j))) =
+      ∑ i, ∑ j, S.rawInner (S.lift i (S.centered i (g i)))
+        (S.lift j (S.centered j (g j))) := by
+    rw [S.rawInner_sum_left]
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [S.rawInner_sum_right]
+  rw [hConstSum, hSumConst, hSumSum, hdouble, S.rawInner_const_const]
   ring
 
 end SectorData
