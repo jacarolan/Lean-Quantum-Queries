@@ -30,6 +30,7 @@ jobs:
         with:
           path: .lake
           key: lean-4.30.0-${{ runner.os }}-${{ hashFiles('lake-manifest.json') }}
+          save-always: true
 
       - name: Restore mathlib cache
         run: lake exe cache get
